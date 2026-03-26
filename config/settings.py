@@ -52,7 +52,7 @@ RSS_SOURCES = [
     # Существующие
     {"url": "https://hbr.org/feed", "name": "Harvard Business Review", "lang": "en"},
     {"url": "https://www.shrm.org/rss/pages/rss.aspx", "name": "SHRM News", "lang": "en"},
-    
+
     # новые источники
     {"url": "https://vc.ru/feed", "name": "VC.ru", "lang": "ru"},
     {"url": "https://habr.com/ru/rss/all/", "name": "Habr", "lang": "ru"},

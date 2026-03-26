@@ -1,6 +1,6 @@
 
 """
-Trend and anomaly analysis module.
+Trend and anomaly analysis module using GigaChat.
 """
 from src.api.gigachat import gigachat_client
 from src.agent.rules import hr_rules

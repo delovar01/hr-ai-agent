@@ -75,7 +75,7 @@ class InsightGenerator:
         return " | ".join(context_parts)
     
     def _fallback_insight(self, data: dict) -> dict:
-        """Generate fallback insight when GigaChat fails."""
+        """Generate fallback insight when GigaChat API fails."""
         return {
             "what_changed": f"Обнаружена новая информация по теме: {data['topic']}",
             "why_important": "Данные требуют внимания HR-специалиста",
@@ -83,6 +83,3 @@ class InsightGenerator:
             "risk_level": "medium" if data["risk_score"] >= 0.5 else "low",
             "urgency": "week"
         }
-
-
-print("Project structure defined. See README.md for full documentation.")
