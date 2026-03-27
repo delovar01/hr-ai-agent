@@ -120,24 +120,10 @@ class HRAgent:
         rss_items = self.rss_fetcher.fetch_all()
         mock_items = self.mock_generator.generate_batch(3)
         total_fetched = len(rss_items)
-        
-        # DEBUG: Показываем даты новостей
-        print(f"\n=== DEBUG: Fetched {total_fetched} items from RSS ===")
-        for idx, item in enumerate(rss_items[:5]):  # Первые 5
-            print(f"{idx+1}. {item.get('title', 'NO TITLE')[:60]}")
-            print(f"   Published: {item.get('published', 'NO DATE')}")
-            print(f"   Source: {item.get('source', 'UNKNOWN')}")
-        
+
         # 2. Filter by time range
         all_items = self._filter_by_time_range(rss_items + mock_items)
         filtered_count = len(all_items)
-        
-        # DEBUG: Результаты фильтрации
-        print(f"\n=== FILTER RESULTS ===")
-        print(f"Time range: {self.user_config.get('time_range', '24h')}")
-        print(f"Before filter: {total_fetched}")
-        print(f"After filter: {filtered_count}")
-        print(f"Filtered out: {total_fetched - filtered_count}")
         
         cycle_results["debug_info"] = {
             "total_fetched": total_fetched,
@@ -153,14 +139,10 @@ class HRAgent:
             # Skip if already processed
             url = item.get("url", item.get("id", ""))
             if agent_state.is_url_processed(url):
-                print(f"⏭️  Skipping (already processed): {item.get('title', 'NO TITLE')[:60]}")
                 continue
-            
-            print(f"✅ Processing NEW item: {item.get('title', 'NO TITLE')[:60]}")
+
             cycle_results["new_items"] += 1
-        
-            # ...   
-            
+
             # Translate if needed
             content = item.get("content", item.get("title", ""))
             translated = translate_if_needed(content, item.get("lang", "en"))
