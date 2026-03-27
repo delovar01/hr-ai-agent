@@ -9,6 +9,7 @@ __pycache__/
 # Environment
 .env
 .venv
+.streamlit/secrets.toml
 
 # Data
 data/state.json
