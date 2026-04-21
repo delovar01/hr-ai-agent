@@ -11,3 +11,7 @@ python-dateutil
 
 # AI/LLM
 gigachat>=0.1.0
+
+# Test infrastructure (used by tests/ and CI)
+pytest>=8.0.0
+pytest-cov>=5.0.0

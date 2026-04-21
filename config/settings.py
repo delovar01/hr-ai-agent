@@ -47,19 +47,15 @@ USER_ROLES = {
     }
 }
 
-# RSS Sources (real HR news feeds)
-RSS_SOURCES = [
-    # Существующие
-    {"url": "https://hbr.org/feed", "name": "Harvard Business Review", "lang": "en"},
-    {"url": "https://www.shrm.org/rss/pages/rss.aspx", "name": "SHRM News", "lang": "en"},
+# RSS Sources (derived from sources catalog)
+# Full catalog with metadata and rationale lives in config/sources_catalog.py.
+# RSS_SOURCES is kept as a thin compatibility shim — it contains only active sources
+# in the legacy {"url", "name", "lang"} shape expected by older code paths.
+from config.sources_catalog import load_sources as _load_sources
 
-    # новые источники
-    {"url": "https://vc.ru/feed", "name": "VC.ru", "lang": "ru"},
-    {"url": "https://habr.com/ru/rss/all/", "name": "Habr", "lang": "ru"},
-    {"url": "https://www.themuse.com/rss", "name": "The Muse", "lang": "en"},
-    # Быстрые обновления
-    {"url": "https://news.ycombinator.com/rss", "name": "Hacker News", "lang": "en"},
-    {"url": "https://www.reddit.com/r/cscareerquestions/.rss", "name": "Reddit CS Careers", "lang": "en"},
+RSS_SOURCES = [
+    {"url": s["url"], "name": s["name"], "lang": s["lang"]}
+    for s in _load_sources(active_only=True)
 ]
 
 # Risk levels
