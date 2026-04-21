@@ -1,45 +1,49 @@
-
 """
 RSS feed fetcher for HR news sources.
+
+Sources are loaded from the central catalog in ``config.sources_catalog``.
+Each fetched item carries the originating ``source_id`` so downstream modules
+(analytics, deduplication, source manager) can attribute it back to the source.
 """
 import feedparser
-from datetime import datetime
-from typing import List
-from config.settings import RSS_SOURCES
+from typing import List, Optional
+
+from config.sources_catalog import load_sources
 
 
 class RSSFetcher:
     """Fetches and parses RSS feeds from HR news sources."""
-    
-    def __init__(self):
-        self.sources = RSS_SOURCES
-    
+
+    DEFAULT_ITEMS_PER_SOURCE = 10
+
+    def __init__(self, sources: Optional[List[dict]] = None, items_per_source: int = DEFAULT_ITEMS_PER_SOURCE):
+        self.sources = sources if sources is not None else load_sources(active_only=True)
+        self.items_per_source = items_per_source
+
     def fetch_all(self) -> List[dict]:
         """Fetch from all configured RSS sources."""
         all_items = []
         for source in self.sources:
-            items = self._fetch_source(source)
-            all_items.extend(items)
+            all_items.extend(self._fetch_source(source))
         return all_items
-    
+
     def _fetch_source(self, source: dict) -> List[dict]:
         """Fetch items from a single RSS source."""
         items = []
         try:
             feed = feedparser.parse(source["url"])
-            for entry in feed.entries[:10]:  # Limit to 10 per source
-                item = {
+            for entry in feed.entries[: self.items_per_source]:
+                items.append({
                     "id": entry.get("id", entry.get("link", "")),
                     "url": entry.get("link", ""),
                     "title": entry.get("title", ""),
                     "content": entry.get("summary", entry.get("description", "")),
                     "published": entry.get("published", ""),
                     "source": source["name"],
+                    "source_id": source.get("id"),
                     "lang": source.get("lang", "en"),
-                    "type": "rss"
-                }
-                items.append(item)
+                    "type": "rss",
+                })
         except Exception as e:
             print(f"Error fetching {source['name']}: {e}")
         return items
-
