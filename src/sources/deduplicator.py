@@ -2,21 +2,14 @@ import re
 from simhash import Simhash
 
 class SimHashDeduplicator:
-    def __init__(self, threshold: int = 3):
-        """
-        :param threshold: Максимальное расстояние Хэмминга. 
-        3 — это стандарт (тексты почти идентичны). 
-        Если нужно отсекать даже сильный рерайт, ставьте 5-8.
-        """
+    def __init__(self, threshold: int = 5):
         self.threshold = threshold
 
     def _preprocess(self, text: str) -> str:
         """Очистка текста для улучшения точности хеширования."""
-        # Убираем HTML-теги, пунктуацию и приводим к нижнему регистру
         text = text.lower()
         text = re.sub(r'<[^>]+>', '', text)
         text = re.sub(r'[^\w\s]', '', text)
-        # Убираем лишние пробелы
         text = " ".join(text.split())
         return text
 
