@@ -1,20 +1,27 @@
+FROM python:3.10-slim AS builder
+
+WORKDIR /app
+
+# Установка зависимостей
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Финальный образ
 FROM python:3.10-slim
 
 WORKDIR /app
 
-# Копируем зависимости
-COPY requirements.txt .
+# Копируем зависимости из builder
+COPY --from=builder /root/.local /root/.local
 
-# Устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Копируем весь код
+# Копируем код
 COPY src/ ./src/
 COPY dashboard/ ./dashboard/
 COPY config/ ./config/
 
-# Открываем порт для Streamlit
+# Добавляем путь к локальным пакетам
+ENV PATH=/root/.local/bin:$PATH
+
 EXPOSE 8501
 
-# Запускаем дашборд
 CMD ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
