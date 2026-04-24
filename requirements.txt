@@ -8,6 +8,7 @@ python-dotenv>=1.0.0
 langdetect>=1.0.9
 schedule>=1.2.1
 python-dateutil
+simhash==2.1.2
 
 # AI/LLM
 gigachat>=0.1.0
