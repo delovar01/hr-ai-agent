@@ -55,6 +55,19 @@ HR AI Агент автоматически:
 ## 🚀 Быстрый старт
 
 ### Требования
+- Python 3.10 или выше
+- Git
+- GigaChat API credentials (инструкция ниже)
+
+### Установка и запуск (3 простых шага)
+
+#### Шаг 1: Клонирование и настройка
+```bash
+git clone https://github.com/delovar01/hr-ai-agent.git
+cd hr-ai-agent
+cp .env.example .env
+
+### Требования
 
 - **Python 3.10+** — скачать с [python.org](https://python.org) (при установке обязательно поставить галочку **Add Python to PATH**)
 - **Git** — скачать с [git-scm.com](https://git-scm.com)
