@@ -106,14 +106,14 @@ class TestValidateSource:
     def test_invalid_lang(self):
         errors = validate_source({
             "id": "x", "url": "http://x", "name": "X",
-            "lang": "fr", "category": "news", "topics_covered": [],
+            "lang": "fr", "category": "media", "topics_covered": [],
         })
         assert any("lang" in e for e in errors)
 
     def test_invalid_quality_score(self):
         errors = validate_source({
             "id": "x", "url": "http://x", "name": "X",
-            "lang": "en", "category": "news", "topics_covered": [],
+            "lang": "en", "category": "media", "topics_covered": [],
             "quality_score": 1.5,
         })
         assert any("quality_score" in e for e in errors)
@@ -121,6 +121,6 @@ class TestValidateSource:
     def test_valid_minimal_source(self):
         errors = validate_source({
             "id": "x", "url": "http://x", "name": "X",
-            "lang": "en", "category": "news", "topics_covered": [],
+            "lang": "en", "category": "media", "topics_covered": [],
         })
         assert errors == []
