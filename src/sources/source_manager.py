@@ -19,21 +19,38 @@ from src.sources.source_analytics import build_source_report
 
 
 # ---- Tunable thresholds (exposed so the team can adjust from one place) ----
+# Калибровка порогов — методологическое решение тимлида (Павленко С.).
+# Изменения здесь должны подкрепляться данными из логов source_events.
+# Полное обоснование значений см. docs/METHODOLOGY.md §5.
 
 # Consider deactivating sources whose dedup rate stays above this level.
+# 0.7 = источник на 70% дублирует уже учтённое: фактически шум для системы.
+# Ниже 0.5 — нормальная пересекаемость новостных лент. От 0.5 до 0.7 —
+# серая зона, не отключаем но мониторим.
 DUPLICATE_RATE_WARN = 0.7
 
 # Require this many cycles of sustained high duplicate rate before acting.
+# 3 цикла защищают от ложного срабатывания на одной волне популярной новости
+# (когда все источники одновременно перепечатывают один сюжет).
 MIN_CYCLES_FOR_DUPLICATE_ACTION = 3
 
 # Deactivate if a source fails to produce any new item for this many cycles.
+# При AGENT_CHECK_INTERVAL=15 минут это ≈75 минут молчания — для weekly/daily
+# источников нормально, для hourly/community — повод считать сломанным.
+# В будущем — сделать порог зависящим от update_frequency источника.
 STALE_CYCLES_THRESHOLD = 5
 
 # Flag as valuable: high unique contribution + any insights.
+# 20 уникальных принятых материалов и 3 сгенерированных инсайта — это
+# минимум, при котором отключение источника заметно ухудшит покрытие
+# рубрикатора. Числа консервативные; для расширения каталога могут быть
+# снижены.
 VALUABLE_MIN_UNIQUE = 20
 VALUABLE_MIN_INSIGHTS = 3
 
 # Minimum events a source must have before it can be judged.
+# До этого порога все суждения статистически нерелевантны: 1-2 цикла
+# недостаточно даже чтобы оценить дублирование.
 MIN_EVENTS_FOR_EVALUATION = 5
 
 
