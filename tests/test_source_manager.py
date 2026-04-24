@@ -94,7 +94,13 @@ class TestEvaluateRow:
 
 class TestEvaluateFull:
     def test_returns_recommendation_per_catalog_source(self):
+        # Every catalog entry must get a recommendation. Orphan sources that
+        # appear in events/observations but not in the catalog (legacy state
+        # after schema migration) may also surface, so we assert the catalog
+        # is a subset of recommendations, not strict equality.
         from config.sources_catalog import SOURCES_CATALOG
 
         recs = SourceManager().evaluate()
-        assert len(recs) == len(SOURCES_CATALOG)
+        rec_ids = {r.source_id for r in recs}
+        catalog_ids = {s["id"] for s in SOURCES_CATALOG}
+        assert catalog_ids.issubset(rec_ids)
