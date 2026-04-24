@@ -48,7 +48,6 @@ class RSSFetcher:
         
         self._save_state()
         
-        # Вывод отчета в консоль после завершения прогона
         print(self.analytics.build_source_report())
         self.analytics.save_stats()
         
@@ -58,23 +57,19 @@ class RSSFetcher:
         """Fetch items from a single RSS source."""
         items = []
         
-        # Интеграция source_id: берем из конфига или генерируем из названия
         source_id = source.get("id", source["name"].lower().replace(" ", "_"))
         
         try:
             feed = feedparser.parse(source["url"])
-            for entry in feed.entries[:10]:  # Limit to 10 per source
+            for entry in feed.entries[:10]: 
                 title = entry.get("title", "")
                 content = entry.get("summary", entry.get("description", ""))
                 
-                # Вместо примитивной проверки URL используем SimHash контента
                 full_text = f"{title} {content}"
                 current_hash = self.deduplicator.get_hash(full_text)
                 
-                # Проверяем на дубликат
                 is_dup = self.deduplicator.is_duplicate(current_hash, self.processed_hashes)
                 
-                # Логируем действие для аналитики
                 self.analytics.log_fetch(source_id, source["name"], is_dup)
                 
                 if is_dup:
@@ -82,7 +77,7 @@ class RSSFetcher:
 
                 item = {
                     "id": entry.get("id", entry.get("link", "")),
-                    "source_id": source_id, # Добавляем идентификатор в результат
+                    "source_id": source_id, 
                     "url": entry.get("link", ""),
                     "title": title,
                     "content": content,
