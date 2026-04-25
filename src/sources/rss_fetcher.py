@@ -15,6 +15,9 @@ class RSSFetcher:
     """Fetches and parses RSS feeds from HR news sources."""
 
     DEFAULT_ITEMS_PER_SOURCE = 10
+    # Browser-like UA: Reddit, MIT Sloan and a few others reject the default
+    # feedparser UA with 403. The HR-Agent identifier preserves traceability.
+    USER_AGENT = "Mozilla/5.0 (compatible; HR-AI-Agent/1.0; +https://github.com/delovar01/hr-ai-agent)"
 
     def __init__(self, sources: Optional[List[dict]] = None, items_per_source: int = DEFAULT_ITEMS_PER_SOURCE):
         self.sources = sources if sources is not None else load_sources(active_only=True)
@@ -31,7 +34,7 @@ class RSSFetcher:
         """Fetch items from a single RSS source."""
         items = []
         try:
-            feed = feedparser.parse(source["url"])
+            feed = feedparser.parse(source["url"], agent=self.USER_AGENT)
             for entry in feed.entries[: self.items_per_source]:
                 items.append({
                     "id": entry.get("id", entry.get("link", "")),
