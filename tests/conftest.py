@@ -3,12 +3,12 @@
 Tests must NEVER touch the real ``data/state.json``. The ``isolated_state``
 fixture provides a fresh AgentState rooted at a temporary directory.
 """
+import json
 import sys
 from pathlib import Path
 
 import pytest
 
-# Ensure the project root is importable when running pytest from any CWD.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -32,8 +32,6 @@ def labeled_news_fixture():
     The actual fixture file ``tests/fixtures/labeled_news.json`` is authored by
     Беспамятных Евгений (аналитик данных). See ``tests/fixtures/README.md``.
     """
-    import json
-
     fixture_path = Path(__file__).parent / "fixtures" / "labeled_news.json"
     if not fixture_path.exists():
         pytest.skip("labeled_news.json fixture not yet provided by the data analyst")
