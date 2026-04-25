@@ -6,6 +6,7 @@ Each fetched item carries the originating ``source_id`` so downstream modules
 (analytics, deduplication, source manager) can attribute it back to the source.
 """
 import feedparser
+import requests
 from typing import List, Optional
 
 from config.sources_catalog import load_sources
@@ -15,6 +16,10 @@ class RSSFetcher:
     """Fetches and parses RSS feeds from HR news sources."""
 
     DEFAULT_ITEMS_PER_SOURCE = 10
+    # Per-request timeout in seconds. feedparser.parse() has no built-in
+    # timeout, so a single hanging source would freeze the whole cycle —
+    # we fetch via requests first to enforce a hard deadline.
+    REQUEST_TIMEOUT = 8
     # Browser-like UA: Reddit, MIT Sloan and a few others reject the default
     # feedparser UA with 403. The HR-Agent identifier preserves traceability.
     USER_AGENT = "Mozilla/5.0 (compatible; HR-AI-Agent/1.0; +https://github.com/delovar01/hr-ai-agent)"
@@ -31,10 +36,15 @@ class RSSFetcher:
         return all_items
 
     def _fetch_source(self, source: dict) -> List[dict]:
-        """Fetch items from a single RSS source."""
+        """Fetch items from a single RSS source. One bad source must not stop the cycle."""
         items = []
         try:
-            feed = feedparser.parse(source["url"], agent=self.USER_AGENT)
+            response = requests.get(
+                source["url"],
+                timeout=self.REQUEST_TIMEOUT,
+                headers={"User-Agent": self.USER_AGENT},
+            )
+            feed = feedparser.parse(response.content)
             for entry in feed.entries[: self.items_per_source]:
                 items.append({
                     "id": entry.get("id", entry.get("link", "")),
@@ -47,6 +57,8 @@ class RSSFetcher:
                     "lang": source.get("lang", "en"),
                     "type": "rss",
                 })
+        except requests.Timeout:
+            print(f"Timeout fetching {source['name']} (>{self.REQUEST_TIMEOUT}s)")
         except Exception as e:
             print(f"Error fetching {source['name']}: {e}")
         return items
