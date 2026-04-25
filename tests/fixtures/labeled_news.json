@@ -1,11 +1,352 @@
 [
   {
-    "id": "test_001",
-    "title": "Техногиганты объявили о массовых сокращениях",
-    "text": "Microsoft, Google и Amazon сокращают 10% сотрудников...",
+    "id": "001",
+    "title": "Meta announces 15% headcount reduction across all divisions",
+    "content": "Mark Zuckerberg announced a company-wide layoff affecting roughly 11,000 employees as Meta reorients spending toward AI infrastructure. Engineering, product and recruiting teams are most affected.",
+    "lang": "en",
+    "source": "fortune-at-work",
     "expected_topic": "layoffs",
-    "expected_risk_score": 0.85,
-    "is_anomaly": true,
-    "source": "tech_news"
+    "expected_risk_level": "critical",
+    "expert_notes": "Большой работодатель, массовый характер, высокая значимость для индустрии"
+  },
+  {
+    "id": "002",
+    "title": "Сбер и ВТБ свернули программы массового найма стажёров на 2026 год",
+    "content": "Крупнейшие банки сократили программы летних стажировок на 40% по сравнению с прошлым годом. Эксперты связывают это с замедлением роста и автоматизацией бэк-офиса.",
+    "lang": "ru",
+    "source": "rbc-hr",
+    "expected_topic": "layoffs",
+    "expected_risk_level": "high",
+    "expert_notes": "Косвенный сигнал сокращений — закрытие пайплайна найма"
+  },
+  {
+    "id": "003",
+    "title": "Amazon retail division cuts 12,000 jobs amid AI restructuring",
+    "content": "Amazon confirmed cuts in its retail and HR support functions as warehouse operations rely more on automated logistics and generative AI agents handle entry-level customer support.",
+    "lang": "en",
+    "source": "techcrunch-hr",
+    "expected_topic": "layoffs",
+    "expected_risk_level": "high",
+    "expert_notes": "Связан с трендом замены людей AI"
+  },
+  {
+    "id": "004",
+    "title": "Salesforce delays hiring freeze decision through Q3",
+    "content": "Salesforce CFO told analysts the company will keep current hiring plans intact, postponing decisions on potential workforce restructuring until Q3 results.",
+    "lang": "en",
+    "source": "fast-company-work",
+    "expected_topic": "layoffs",
+    "expected_risk_level": "medium",
+    "expert_notes": "Не сокращения, но сигнал неопределённости"
+  },
+  {
+    "id": "005",
+    "title": "Яндекс закрыл подразделение беспилотников: увольнение 600 сотрудников",
+    "content": "Решение о закрытии направления Yandex SDG связано с пересмотром стратегии R&D после реструктуризации компании. Часть инженеров получит предложения в других подразделениях.",
+    "lang": "ru",
+    "source": "vc-ru",
+    "expected_topic": "layoffs",
+    "expected_risk_level": "high",
+    "expert_notes": "Точечное, но крупное сокращение в РФ tech"
+  },
+  {
+    "id": "006",
+    "title": "Tech firms scramble to hire AI ML engineers, salaries jump 40%",
+    "content": "OpenAI, Anthropic, Google DeepMind and Meta are in fierce competition for senior ML engineering talent. Median total compensation for principal-level roles crossed $1M in 2026.",
+    "lang": "en",
+    "source": "hbr",
+    "expected_topic": "hiring",
+    "expected_risk_level": "high",
+    "expert_notes": "Перегрев на рынке AI-инженеров"
+  },
+  {
+    "id": "007",
+    "title": "HeadHunter: число вакансий разработчиков выросло на 25% за квартал",
+    "content": "Лидерами по росту стали направления искусственного интеллекта, кибербезопасности и DevOps. При этом для junior-позиций конкуренция, наоборот, усилилась.",
+    "lang": "ru",
+    "source": "habr",
+    "expected_topic": "hiring",
+    "expected_risk_level": "medium",
+    "expert_notes": "Рост вакансий в РФ IT — позитивный сигнал"
+  },
+  {
+    "id": "008",
+    "title": "SHRM survey shows return-to-office hiring stabilizing in 2026",
+    "content": "Society for Human Resource Management report finds that 60% of US firms now hire under hybrid models without formal RTO mandates, up from 48% in 2024.",
+    "lang": "en",
+    "source": "medium-hr",
+    "expected_topic": "hiring",
+    "expected_risk_level": "low",
+    "expert_notes": "Стабильная картина, не риск, но информативно"
+  },
+  {
+    "id": "009",
+    "title": "Российские IT-компании начали привлекать кадры из Беларуси и Узбекистана",
+    "content": "Релокация специалистов в РФ из стран ближнего зарубежья выросла втрое с 2024 года. Работодатели предлагают переезд, ВНЖ и пакет адаптации.",
+    "lang": "ru",
+    "source": "vedomosti-hr",
+    "expected_topic": "hiring",
+    "expected_risk_level": "medium",
+    "expert_notes": "Сдвиг найма в сторону импорта кадров"
+  },
+  {
+    "id": "010",
+    "title": "GitHub Copilot replaces junior dev hiring at 30% of surveyed firms",
+    "content": "A Stack Overflow industry survey shows almost a third of companies now reduce junior engineer hiring in favor of senior engineers paired with AI coding assistants.",
+    "lang": "en",
+    "source": "hacker-news",
+    "expected_topic": "hiring",
+    "expected_risk_level": "high",
+    "expert_notes": "Структурный сдвиг в найме, влияет на entry-level рынок"
+  },
+  {
+    "id": "011",
+    "title": "AI engineer median compensation hits $450K at top firms",
+    "content": "Levels.fyi data shows median total comp for senior AI engineers at FAANG-tier firms reached $450K in early 2026, with top-of-band offers exceeding $900K.",
+    "lang": "en",
+    "source": "techcrunch-hr",
+    "expected_topic": "salaries",
+    "expected_risk_level": "high",
+    "expert_notes": "Заметный pay gap между AI и обычной разработкой"
+  },
+  {
+    "id": "012",
+    "title": "Зарплаты в IT в Москве выросли на 18% год к году",
+    "content": "По данным hh.ru, медианная зарплата разработчика в Москве в первом квартале 2026 года достигла 350 тысяч рублей. Сильнее всего выросли позиции в data engineering.",
+    "lang": "ru",
+    "source": "habr",
+    "expected_topic": "salaries",
+    "expected_risk_level": "medium",
+    "expert_notes": "Рост зарплат в РФ — внутренний рынок"
+  },
+  {
+    "id": "013",
+    "title": "Workplace wage transparency laws expand to 12 US states",
+    "content": "California, New York, Colorado and nine other states now require employers to publish salary ranges in job postings, intensifying pressure on national HR teams to standardize bands.",
+    "lang": "en",
+    "source": "hbr",
+    "expected_topic": "salaries",
+    "expected_risk_level": "medium",
+    "expert_notes": "Регуляторный сдвиг, важно для US-операторов"
+  },
+  {
+    "id": "014",
+    "title": "Минтруд обновил среднюю зарплату в технических профессиях",
+    "content": "Опубликованы официальные данные за 2025 год: средняя зарплата инженерных и IT-профессий в РФ составляет 140 тысяч рублей в месяц.",
+    "lang": "ru",
+    "source": "vedomosti-hr",
+    "expected_topic": "salaries",
+    "expected_risk_level": "low",
+    "expert_notes": "Справочная статистика, низкий риск"
+  },
+  {
+    "id": "015",
+    "title": "Tech sector pay gap between hubs and remote widens",
+    "content": "A new Glassdoor analysis shows median tech salaries in San Francisco are 35% higher than for fully remote roles in 2026, reversing the COVID-era convergence trend.",
+    "lang": "en",
+    "source": "wired-work",
+    "expected_topic": "salaries",
+    "expected_risk_level": "high",
+    "expert_notes": "Рост неравенства, влияет на удалёнщиков"
+  },
+  {
+    "id": "016",
+    "title": "LinkedIn Learning reports 70% growth in AI literacy courses",
+    "content": "Course enrollments in prompt engineering, AI fundamentals and ML for non-engineers more than doubled year-over-year. HR functions are among the fastest-growing learner segments.",
+    "lang": "en",
+    "source": "fast-company-work",
+    "expected_topic": "skills",
+    "expected_risk_level": "medium",
+    "expert_notes": "Сигнал для L&D-стратегии"
+  },
+  {
+    "id": "017",
+    "title": "Школы программирования переориентировались на промт-инженерию",
+    "content": "Skillbox, Яндекс.Практикум и GeekBrains запустили курсы по работе с LLM и автоматизации с AI-агентами. Спрос на классические курсы Java и Python снизился на 15%.",
+    "lang": "ru",
+    "source": "vc-ru",
+    "expected_topic": "skills",
+    "expected_risk_level": "medium",
+    "expert_notes": "Сдвиг в обучении, важно для recruiter pipeline"
+  },
+  {
+    "id": "018",
+    "title": "Coursera launches generative AI certifications for HR professionals",
+    "content": "The new track covers AI-driven sourcing, bias detection in resume screening and prompt design for L&D content, signed off by SHRM.",
+    "lang": "en",
+    "source": "medium-hr",
+    "expected_topic": "skills",
+    "expected_risk_level": "low",
+    "expert_notes": "Профессиональное развитие, низкий риск"
+  },
+  {
+    "id": "019",
+    "title": "Хабр: разработчики недооценивают роль soft skills в ИИ-эпохе",
+    "content": "Опрос аудитории Хабра показал, что 70% разработчиков считают soft skills второстепенными, при этом HR-отделы ставят их в топ-3 критериев для senior-найма.",
+    "lang": "ru",
+    "source": "habr",
+    "expected_topic": "skills",
+    "expected_risk_level": "low",
+    "expert_notes": "Discrepancy между ожиданиями кандидатов и работодателей"
+  },
+  {
+    "id": "020",
+    "title": "McKinsey: 40% of jobs will require new skills by 2030",
+    "content": "A new Future of Work report estimates that 375 million workers globally will need to switch occupational categories due to AI-driven automation in the next five years.",
+    "lang": "en",
+    "source": "economist-business",
+    "expected_topic": "skills",
+    "expected_risk_level": "medium",
+    "expert_notes": "Стратегический сигнал для workforce planning"
+  },
+  {
+    "id": "021",
+    "title": "Healthcare workers report record burnout levels in 2026 study",
+    "content": "American Medical Association survey finds 62% of physicians and nurses experience moderate-to-severe burnout, the highest level since pandemic peaks.",
+    "lang": "en",
+    "source": "fortune-at-work",
+    "expected_topic": "burnout",
+    "expected_risk_level": "high",
+    "expert_notes": "Системный риск в здравоохранении"
+  },
+  {
+    "id": "022",
+    "title": "Исследование hh: 65% IT-специалистов испытывают выгорание",
+    "content": "Опрос 5000 разработчиков и менеджеров показал, что выгорание стало главной причиной увольнений в 2026 году, обогнав претензии к зарплате.",
+    "lang": "ru",
+    "source": "habr",
+    "expected_topic": "burnout",
+    "expected_risk_level": "high",
+    "expert_notes": "Выгорание в РФ IT — первичный фактор текучки"
+  },
+  {
+    "id": "023",
+    "title": "Tech companies pilot 4-day work weeks to combat burnout",
+    "content": "Microsoft Japan, Buffer and several mid-sized SaaS firms are reporting productivity gains of 5-12% after switching to a 32-hour week without pay reduction.",
+    "lang": "en",
+    "source": "wired-work",
+    "expected_topic": "burnout",
+    "expected_risk_level": "medium",
+    "expert_notes": "Эксперимент с режимом труда — позитивный, но риск-фактор для отстающих"
+  },
+  {
+    "id": "024",
+    "title": "Психологи отметили рост обращений от менеджеров среднего звена",
+    "content": "Корпоративные программы well-being фиксируют двукратный рост запросов на индивидуальную терапию от middle-management в 2026 году.",
+    "lang": "ru",
+    "source": "vedomosti-hr",
+    "expected_topic": "burnout",
+    "expected_risk_level": "medium",
+    "expert_notes": "Скрытый риск в управленческой прослойке"
+  },
+  {
+    "id": "025",
+    "title": "WHO classifies workplace burnout as primary health risk in EU",
+    "content": "World Health Organization upgraded burnout from occupational phenomenon to a primary public health concern, citing rising disability claims linked to workplace stress.",
+    "lang": "en",
+    "source": "economist-business",
+    "expected_topic": "burnout",
+    "expected_risk_level": "critical",
+    "expert_notes": "Регуляторный сдвиг международного уровня"
+  },
+  {
+    "id": "026",
+    "title": "Hybrid work models settle as new norm in enterprise surveys",
+    "content": "Gartner data for Q1 2026 shows 70% of knowledge workers operate in hybrid arrangements, with full-RTO mandates declining for the third consecutive quarter.",
+    "lang": "en",
+    "source": "fast-company-work",
+    "expected_topic": "culture",
+    "expected_risk_level": "medium",
+    "expert_notes": "Стабилизация после колебаний 2023-2024"
+  },
+  {
+    "id": "027",
+    "title": "Опрос Сбер HR: 80% сотрудников ценят прозрачные коммуникации",
+    "content": "Внутреннее исследование показало, что прозрачность в принятии решений руководства входит в топ-3 драйверов вовлечённости, опережая ДМС и спортзал.",
+    "lang": "ru",
+    "source": "vedomosti-hr",
+    "expected_topic": "culture",
+    "expected_risk_level": "low",
+    "expert_notes": "Внутрикорпоративный сигнал, низкий риск"
+  },
+  {
+    "id": "028",
+    "title": "Major bank ousts CEO over toxic workplace culture findings",
+    "content": "An independent investigation into a Top-10 US bank uncovered systemic harassment and retaliation. The CEO and two SVPs resigned the same week the report became public.",
+    "lang": "en",
+    "source": "fortune-at-work",
+    "expected_topic": "culture",
+    "expected_risk_level": "high",
+    "expert_notes": "Кейс с серьёзной репутационной потерей"
+  },
+  {
+    "id": "029",
+    "title": "Корпоративные онбординг-практики ушли в видео-формат",
+    "content": "Согласно VC.ru, 68% крупных российских компаний заменили очный онбординг на адаптивные видео-курсы с AI-проверкой знаний.",
+    "lang": "ru",
+    "source": "vc-ru",
+    "expected_topic": "culture",
+    "expected_risk_level": "medium",
+    "expert_notes": "Trend в адаптации новых сотрудников"
+  },
+  {
+    "id": "030",
+    "title": "Open office plans declining in popularity post-pandemic",
+    "content": "WeWork and JLL workplace data show a 30% drop in demand for fully open layouts as employers redesign spaces around quiet zones, focus rooms and small huddle pods.",
+    "lang": "en",
+    "source": "mit-sloan",
+    "expected_topic": "culture",
+    "expected_risk_level": "low",
+    "expert_notes": "Долгосрочный тренд в офисном дизайне"
+  },
+  {
+    "id": "031",
+    "title": "Big Tech rolls back DEI programs amid political pressure",
+    "content": "Meta, Google, Amazon and Walmart have publicly scaled back diversity goals and replaced dedicated DEI teams with broader 'belonging' functions in early 2026.",
+    "lang": "en",
+    "source": "reddit-humanresources",
+    "expected_topic": "diversity",
+    "expected_risk_level": "high",
+    "expert_notes": "Политически чувствительная новость, высокий резонанс"
+  },
+  {
+    "id": "032",
+    "title": "Вступил в силу закон о квотах при приёме людей с инвалидностью",
+    "content": "Поправки в Трудовой кодекс обязали компании от 100 человек обеспечивать долю сотрудников с инвалидностью не менее 4%. Штрафы за невыполнение увеличены втрое.",
+    "lang": "ru",
+    "source": "rbc-hr",
+    "expected_topic": "diversity",
+    "expected_risk_level": "medium",
+    "expert_notes": "Регуляторное изменение в РФ"
+  },
+  {
+    "id": "033",
+    "title": "Women in tech leadership reaches 28% globally for first time",
+    "content": "According to a Deloitte report, the share of women in tech executive positions crossed 28% in 2026, up from 21% three years earlier. Gains are most visible in Europe and Latin America.",
+    "lang": "en",
+    "source": "hbr",
+    "expected_topic": "diversity",
+    "expected_risk_level": "medium",
+    "expert_notes": "Положительный диверсити-тренд"
+  },
+  {
+    "id": "034",
+    "title": "Сбер запустил программу поддержки сотрудников 50+",
+    "content": "Программа включает наставничество, переподготовку и гибкие графики для возрастных сотрудников. Цель — повысить долю работников 50+ в банке до 25% к 2028 году.",
+    "lang": "ru",
+    "source": "vedomosti-hr",
+    "expected_topic": "diversity",
+    "expected_risk_level": "low",
+    "expert_notes": "Возрастной diversity, корпоративная программа"
+  },
+  {
+    "id": "035",
+    "title": "LinkedIn report shows steady progress in racial diversity tracking",
+    "content": "LinkedIn Talent Insights documents a slow but consistent rise in self-reported racial diversity across US tech firms, though gaps at director level remain wide.",
+    "lang": "en",
+    "source": "medium-hr",
+    "expected_topic": "diversity",
+    "expected_risk_level": "low",
+    "expert_notes": "Метрика прогресса, низкий риск"
   }
 ]
