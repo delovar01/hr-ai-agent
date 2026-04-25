@@ -42,10 +42,13 @@ class AgentState:
             },
             "alerts": [],
             "processed_urls": [],
+            "content_fingerprints": [],
+            "source_events": [],
             "metrics": {
                 "total_sources_checked": 0,
                 "total_insights_generated": 0,
-                "anomalies_detected": 0
+                "anomalies_detected": 0,
+                "content_duplicates_skipped": 0
             }
         }
     
@@ -130,6 +133,45 @@ class AgentState:
         """Reset agent state to initial."""
         self.state = self._default_state()
         self.save()
+
+    # ---- Content fingerprints (near-duplicate detection) ----
+
+    MAX_FINGERPRINTS = 1000
+
+    def get_content_fingerprints(self) -> list:
+        """Return the fingerprint window used by the content deduplicator."""
+        return self.state.setdefault("content_fingerprints", [])
+
+    def set_content_fingerprints(self, entries: list):
+        """Persist the fingerprint window."""
+        self.state["content_fingerprints"] = entries[-self.MAX_FINGERPRINTS:]
+        self.save()
+
+    def record_content_duplicate(self):
+        """Increment duplicate counter."""
+        metrics = self.state.setdefault("metrics", {})
+        metrics["content_duplicates_skipped"] = metrics.get("content_duplicates_skipped", 0) + 1
+        self.save()
+
+    # ---- Source events (analytics audit trail) ----
+
+    MAX_SOURCE_EVENTS = 5000
+
+    def log_source_event(self, event: dict):
+        """Append a per-source event used by SourceAnalytics.
+
+        ``event`` is expected to contain at minimum ``source_id``, ``kind`` and
+        ``timestamp``. Kept as an append-only log capped at MAX_SOURCE_EVENTS.
+        """
+        event.setdefault("timestamp", datetime.now().isoformat())
+        events = self.state.setdefault("source_events", [])
+        events.append(event)
+        self.state["source_events"] = events[-self.MAX_SOURCE_EVENTS:]
+        self.save()
+
+    def get_source_events(self) -> list:
+        """Return the raw source-event log."""
+        return self.state.setdefault("source_events", [])
 
 
 
