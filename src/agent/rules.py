@@ -1,34 +1,93 @@
 
 """
 HR-specific rules and logic for the agent.
+
+Все методологические константы (пороги риска, чувствительность алертов, дельта
+фокусной темы) вынесены в config/settings.py — этот модуль только применяет
+их. Если нужно что-то откалибровать — правьте settings.py, не правьте здесь.
+Обоснование значений см. docs/METHODOLOGY.md.
 """
 from datetime import datetime, timedelta
-from config.settings import HR_TOPICS, RISK_LEVELS, ANOMALY_THRESHOLD
+from config.settings import (
+    HR_TOPICS,
+    RISK_LEVELS,
+    ANOMALY_THRESHOLD,
+    SENSITIVITY_THRESHOLDS,
+    FOCUS_TOPIC_DELTA,
+)
 
 
 class HRRules:
     """HR domain rules for agent decision-making."""
-    
-    # Keywords that indicate risk by topic
+
+    # Keywords that indicate risk by topic.
+    # Покрывают все 7 тем рубрикатора. Список — это первичный фильтр для
+    # быстрого rule-based score; основной классификатор — GigaChat.
+    # Поддерживается русский и английский: новости приходят из обоих языков.
     RISK_KEYWORDS = {
-        "layoffs": ["сокращение", "увольнение", "layoff", "downsizing", "restructuring", "job cuts"],
-        "burnout": ["выгорание", "стресс", "burnout", "overwork", "mental health", "quit"],
-        "salaries": ["снижение зарплат", "задержка", "salary cut", "wage freeze"],
+        "layoffs": [
+            "сокращение", "увольнение", "массовое увольнение", "оптимизация штата",
+            "layoff", "downsizing", "restructuring", "job cuts", "headcount reduction",
+            "workforce reduction",
+        ],
+        "burnout": [
+            "выгорание", "стресс", "переработка", "психическое здоровье",
+            "burnout", "overwork", "mental health", "quit", "great resignation",
+            "quiet quitting",
+        ],
+        "salaries": [
+            "снижение зарплат", "задержка зарплаты", "заморозка зарплат", "урезание премий",
+            "salary cut", "wage freeze", "pay cut", "compensation cut",
+        ],
+        "hiring": [
+            # Сигналы напряжения на рынке найма (не сам найм, а его сбои).
+            "заморозка найма", "hiring freeze", "rescinded offers", "отозванные офферы",
+            "талантливый дефицит", "talent shortage",
+        ],
+        "skills": [
+            "skill gap", "разрыв навыков", "устаревшие навыки", "skills mismatch",
+            "automation displacement", "автоматизация рабочих мест",
+        ],
+        "culture": [
+            "токсичная культура", "harassment", "дискриминация", "конфликт",
+            "toxic culture", "workplace conflict", "scandal",
+        ],
+        "diversity": [
+            "discrimination", "bias incident", "pay gap", "разрыв в оплате",
+            "gender gap", "неравенство",
+        ],
     }
-    
-    # Keywords that indicate positive signals
+
+    # Keywords that indicate positive signals (subtract from risk).
     POSITIVE_KEYWORDS = {
-        "hiring": ["найм", "вакансии", "hiring surge", "talent acquisition", "new positions"],
-        "skills": ["обучение", "развитие", "upskilling", "training program", "career growth"],
-        "culture": ["well-being", "благополучие", "employee satisfaction", "engagement"],
+        "hiring": [
+            "найм", "вакансии", "расширение штата", "набор команды",
+            "hiring surge", "talent acquisition", "new positions", "headcount growth",
+        ],
+        "skills": [
+            "обучение", "развитие", "переквалификация", "карьерный рост",
+            "upskilling", "reskilling", "training program", "career growth", "learning",
+        ],
+        "culture": [
+            "благополучие", "вовлечённость", "well-being", "employee satisfaction",
+            "engagement", "wellbeing", "psychological safety",
+        ],
+        "salaries": [
+            "повышение зарплат", "индексация", "бонусы", "премирование",
+            "salary increase", "raise", "compensation review",
+        ],
+        "diversity": [
+            "инклюзия", "равные возможности", "inclusion", "equal opportunity",
+            "DEI initiative", "diverse hiring",
+        ],
     }
-    
+
     @staticmethod
     def calculate_risk_score(text: str, topic: str) -> float:
         """Calculate risk score based on content."""
         text_lower = text.lower()
         score = 0.5  # Base score
-        
+
         # Check risk keywords
         for risk_topic, keywords in HRRules.RISK_KEYWORDS.items():
             for keyword in keywords:
@@ -37,15 +96,15 @@ class HRRules:
                         score += 0.15
                     else:
                         score += 0.05
-        
+
         # Check positive keywords (reduce risk)
         for pos_topic, keywords in HRRules.POSITIVE_KEYWORDS.items():
             for keyword in keywords:
                 if keyword.lower() in text_lower:
                     score -= 0.1
-        
+
         return max(0.0, min(1.0, score))
-    
+
     @staticmethod
     def get_risk_level(score: float) -> dict:
         """Get risk level based on score."""
@@ -53,25 +112,24 @@ class HRRules:
             if score >= config["threshold"]:
                 return {"level": level, **config}
         return {"level": "low", **RISK_LEVELS["low"]}
-    
+
     @staticmethod
     def should_generate_alert(risk_score: float, topic: str, user_config: dict) -> bool:
-        """Determine if alert should be generated."""
+        """Determine if alert should be generated.
+
+        Threshold map and focus-topic delta live in config/settings.py.
+        Unknown sensitivity falls back to medium.
+        """
         sensitivity = user_config.get("sensitivity", "medium")
         focus_topics = user_config.get("focus_topics", [])
-        
-        thresholds = {
-            "high": 0.3,
-            "medium": 0.5,
-            "low": 0.7
-        }
-        
-        threshold = thresholds.get(sensitivity, 0.5)
-        
-        # Lower threshold for focus topics
+
+        threshold = SENSITIVITY_THRESHOLDS.get(sensitivity, SENSITIVITY_THRESHOLDS["medium"])
+
+        # Lower threshold for focus topics — пользователь явно отметил тему
+        # как приоритетную, повышаем чувствительность именно для неё.
         if topic in focus_topics:
-            threshold -= 0.15
-        
+            threshold -= FOCUS_TOPIC_DELTA
+
         return risk_score >= threshold
     
     @staticmethod

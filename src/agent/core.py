@@ -12,6 +12,7 @@ from src.sources.mock_data import MockDataGenerator
 from src.processing.translator import translate_if_needed
 from src.processing.classifier import classify_content
 from src.processing.analyzer import analyze_content
+from src.processing.deduplicator import ContentDeduplicator
 from src.insights.generator import InsightGenerator
 from config.settings import HR_TOPICS, USER_ROLES, TIME_RANGES  # Добавил TIME_RANGES
 
@@ -32,6 +33,8 @@ class HRAgent:
         self.rss_fetcher = RSSFetcher()
         self.mock_generator = MockDataGenerator()
         self.insight_generator = InsightGenerator()
+        self.deduplicator = ContentDeduplicator()
+        self.deduplicator.load_state(agent_state.get_content_fingerprints())
         self.is_running = False
     
     def _default_config(self) -> dict:
@@ -111,37 +114,77 @@ class HRAgent:
             "timestamp": datetime.now().isoformat(),
             "sources_checked": 0,
             "new_items": 0,
+            "duplicates_skipped": 0,
             "insights_generated": [],
             "alerts_created": [],
             "debug_info": {}  # ← Добавляем дебаг
         }
-        
+
         # 1. Fetch from real RSS sources
         rss_items = self.rss_fetcher.fetch_all()
         mock_items = self.mock_generator.generate_batch(3)
         total_fetched = len(rss_items)
 
+        # Log per-source fetch counts for analytics.
+        fetch_counts: dict = {}
+        for item in rss_items:
+            sid = item.get("source_id") or item.get("source", "unknown")
+            fetch_counts[sid] = fetch_counts.get(sid, 0) + 1
+        cycle_timestamp = cycle_results["timestamp"]
+        for sid, count in fetch_counts.items():
+            agent_state.log_source_event({
+                "source_id": sid,
+                "kind": "fetched",
+                "count": count,
+                "cycle": cycle_timestamp,
+            })
+
         # 2. Filter by time range
         all_items = self._filter_by_time_range(rss_items + mock_items)
         filtered_count = len(all_items)
-        
+
         cycle_results["debug_info"] = {
             "total_fetched": total_fetched,
             "after_filter": filtered_count,
             "filtered_out": total_fetched - filtered_count,
             "time_range": self.user_config.get('time_range', '24h')
         }
-        
+
         cycle_results["sources_checked"] = len(all_items)
-        
+
         # 3. Process each item
         for item in all_items:
-            # Skip if already processed
+            source_id = item.get("source_id") or item.get("source", "unknown")
+
+            # Skip if already processed (URL-level)
             url = item.get("url", item.get("id", ""))
             if agent_state.is_url_processed(url):
                 continue
 
+            # Content-level dedup: catches the same story republished across sources.
+            text_for_dedup = " ".join(filter(None, [item.get("title"), item.get("content")]))
+            dup_match = self.deduplicator.check(text_for_dedup, item_id=url)
+            if dup_match.is_duplicate:
+                agent_state.record_content_duplicate()
+                agent_state.log_source_event({
+                    "source_id": source_id,
+                    "kind": "duplicate",
+                    "matched_item_id": dup_match.matched_item_id,
+                    "distance": dup_match.distance,
+                    "cycle": cycle_timestamp,
+                })
+                agent_state.mark_url_processed(url)
+                cycle_results["duplicates_skipped"] += 1
+                continue
+            self.deduplicator.add(text_for_dedup, item_id=url)
+
             cycle_results["new_items"] += 1
+            agent_state.log_source_event({
+                "source_id": source_id,
+                "kind": "accepted",
+                "item_id": url,
+                "cycle": cycle_timestamp,
+            })
 
             # Translate if needed
             content = item.get("content", item.get("title", ""))
@@ -203,6 +246,9 @@ class HRAgent:
                 agent_state.add_alert(alert)
                 cycle_results["alerts_created"].append(alert)
         
+        # Persist deduplicator window so next cycle picks up where we left off.
+        agent_state.set_content_fingerprints(self.deduplicator.export_state())
+
         agent_state.update_last_check()
         return cycle_results
     
