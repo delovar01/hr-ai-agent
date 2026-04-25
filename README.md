@@ -91,6 +91,37 @@ streamlit run dashboard/app.py
 
 После запуска откроется браузер с дашбордом.
 
+
+## 📡 Управление источниками данных
+
+### Как добавить новый RSS источник
+
+1. Откройте `config/sources_catalog.py`
+2. Добавьте новый элемент в список `SOURCES_CATALOG` (это `List[dict]`, не dataclass):
+
+```python
+SOURCES_CATALOG: List[dict] = [
+    # ... существующие источники ...
+    {
+        "id": "new_source_id",
+        "url": "https://example.com/rss",
+        "name": "Название источника",
+        "lang": "ru",                          # "ru" | "en"
+        "region": "RU",                        # "RU" | "EN" | "Global"
+        "category": "news",                    # news | community | research | corporate | job_board | analytical
+        "topics_covered": ["hiring", "salaries"],  # подмножество из 7 HR-тем
+        "update_frequency": "daily",           # hourly | daily | weekly
+        "audience_size": "medium",             # large | medium | niche
+        "quality_score": 0.85,                 # 0.0–1.0
+        "is_active": True,
+        "rationale": "Кратко: почему этот источник нужен в каталоге.",
+    },
+]
+```
+
+3. Прогоните `pytest tests/test_sources_catalog.py` — он проверит структуру.
+4. По мере накопления статистики используйте `set_active(source_id, False)` для отключения шумных источников или `compute_source_metrics()` для оценки вклада каждого.
+
 ---
 
 ## 🔑 Как получить GIGACHAT_CREDENTIALS

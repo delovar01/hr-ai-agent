@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  hr-agent:
+    build: .
+    container_name: hr-agent
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

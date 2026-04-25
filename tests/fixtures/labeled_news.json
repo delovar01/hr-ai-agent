@@ -1,0 +1,11 @@
+[
+  {
+    "id": "test_001",
+    "title": "Техногиганты объявили о массовых сокращениях",
+    "text": "Microsoft, Google и Amazon сокращают 10% сотрудников...",
+    "expected_topic": "layoffs",
+    "expected_risk_score": 0.85,
+    "is_anomaly": true,
+    "source": "tech_news"
+  }
+]
