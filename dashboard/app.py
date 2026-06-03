@@ -17,6 +17,7 @@ from src.api.gigachat import gigachat_client
 from src.api.rag import rag_context_builder
 from src.insights.report_generator import generate_daily_summary_markdown
 from src.insights.filters import filter_alerts, filter_insights
+from src.processing.quality_metrics import load_cached_report
 from config.settings import HR_TOPICS, USER_ROLES, RISK_LEVELS, TIME_RANGES
 
 # Page config
@@ -225,6 +226,53 @@ def render_agent_controls():
                 f"Новых: {result.get('new_items', 0)} | "
                 f"Инсайтов: {len(result.get('insights_generated', []))}"
             )
+
+
+def render_quality_badge():
+    """Show Cohen's Kappa for the classifier as a compact quality badge.
+
+    Read-only — value is precomputed by ``scripts/compute_kappa.py``. We
+    do not recompute on every dashboard load (35 GigaChat calls per page
+    view would be unacceptable). If the cache is missing, show a hint.
+    """
+    report = load_cached_report()
+    if report is None:
+        st.info(
+            "📐 **Качество классификации:** не рассчитано. "
+            "Запусти `python scripts/compute_kappa.py` для оценки на размеченном датасете."
+        )
+        return
+
+    # Interpretation thresholds follow Landis & Koch (1977):
+    # >0.80 substantial+, 0.60–0.80 good, 0.40–0.60 moderate, <0.40 poor.
+    if report.kappa >= 0.80:
+        emoji, verdict = "🟢", "отличное согласие"
+    elif report.kappa >= 0.60:
+        emoji, verdict = "🟢", "хорошее согласие"
+    elif report.kappa >= 0.40:
+        emoji, verdict = "🟡", "умеренное согласие"
+    else:
+        emoji, verdict = "🔴", "ниже целевого уровня"
+
+    bcol1, bcol2, bcol3 = st.columns([1, 1, 2])
+    with bcol1:
+        st.metric(
+            f"{emoji} Cohen's κ",
+            f"{report.kappa:.2f}",
+            help="Согласие классификатора с экспертной разметкой за вычетом случайного совпадения",
+        )
+    with bcol2:
+        st.metric(
+            "Accuracy",
+            f"{report.accuracy:.0%}",
+            help=f"Доля правильных предсказаний на {report.n_items} размеченных новостях",
+        )
+    with bcol3:
+        st.caption(
+            f"**Качество классификации:** {verdict}. "
+            f"Метрика рассчитана на {report.n_items} новостях из "
+            f"`tests/fixtures/labeled_news.json` ({report.computed_at[:10]})."
+        )
 
 
 def render_metrics():
@@ -616,6 +664,10 @@ def main():
 
     # Metrics row
     render_metrics()
+
+    # Classifier quality badge — closes critierion 4
+    # («обоснованные методы применения ИИ»).
+    render_quality_badge()
 
     st.markdown("---")
 
