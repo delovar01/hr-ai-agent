@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from src.insights.report_generator import generate_daily_summary_markdown
+from src.insights.report_generator import (
+    generate_daily_summary_markdown,
+    generate_daily_summary_pdf,
+)
 
 
 def _now() -> datetime:
@@ -90,6 +93,26 @@ def test_insights_rendered_with_all_sections():
     assert "run pulse survey" in md
     assert "немедленно" in md
     assert "harvard-business" in md
+
+
+def test_pdf_generation_returns_valid_pdf_bytes():
+    """Smoke test: PDF is real bytes and starts with the %PDF magic marker."""
+    state = _state(
+        insights=[{
+            "topic_name": "Выгорание",
+            "what_changed": "growing burnout",
+            "why_important": "morale at risk",
+            "recommendation": "run survey",
+            "risk_level": "high",
+            "urgency": "immediate",
+        }],
+        metrics={"total_sources_checked": 5},
+    )
+    pdf = generate_daily_summary_pdf(state, now=_now())
+    assert isinstance(pdf, bytes)
+    assert pdf.startswith(b"%PDF-"), "Output is not a valid PDF stream"
+    # PDF should be non-trivially sized — empty state still yields headers.
+    assert len(pdf) > 1000
 
 
 def test_metrics_block_uses_supplied_numbers():

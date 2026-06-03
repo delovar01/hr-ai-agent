@@ -8,6 +8,10 @@ langdetect>=1.0.9
 schedule>=1.2.1
 python-dateutil
 
+# PDF report export (daily summary). Pure-Python — no system deps,
+# unlike weasyprint which needs Cairo/GTK and breaks Streamlit Cloud.
+fpdf2>=2.7.0
+
 # AI/LLM
 gigachat>=0.1.0
 
