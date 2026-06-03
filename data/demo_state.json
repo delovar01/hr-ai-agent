@@ -1,5 +1,5 @@
 {
-  "last_check": "2026-06-04T01:01:05.056471",
+  "last_check": "2026-06-04T01:01:55.209718",
   "observations": [
     {
       "id": "tag:blogs.harvardbusiness.org,2007-03-31:999.429237",
@@ -2180,9 +2180,168 @@
         "label": "Средний"
       },
       "timestamp": "2026-06-04T01:01:04.090579"
+    },
+    {
+      "id": "rssexport.rbc.ru:technology_and_media:6a20755f9a79475eee5c101f",
+      "url": "https://www.rbc.ru/society/21/04/2026/69e7768d9a7947ae4b3ffe93",
+      "title": "Приложение мессенджера «Макс» пропало из App Store",
+      "content": "Мессенджер «Макс» исчез из магазина приложений Apple. При этом его все еще можно установить в остальных магазинах приложений",
+      "published": "Wed, 03 Jun 2026 21:42:49 +0300",
+      "source": "РБК — Экономика",
+      "source_id": "rbc-hr",
+      "lang": "ru",
+      "type": "rss",
+      "translated_content": "Мессенджер «Макс» исчез из магазина приложений Apple. При этом его все еще можно установить в остальных магазинах приложений",
+      "classification": {
+        "topic": "culture",
+        "confidence": 0.5,
+        "keywords": []
+      },
+      "risk_score": 0.5,
+      "risk_level": {
+        "level": "medium",
+        "threshold": 0.4,
+        "color": "#FFD700",
+        "label": "Средний"
+      },
+      "timestamp": "2026-06-04T01:01:51.324849"
+    },
+    {
+      "id": "6f6c56c3-4003-4213-83e7-0617a6452340",
+      "url": "https://www.economist.com/business/2026/06/03/american-capitalism-has-taken-an-apocalyptic-turn",
+      "title": "American capitalism has taken an apocalyptic turn",
+      "content": "Millenarian thinking permeates business and markets",
+      "published": "Wed, 03 Jun 2026 19:28:52 +0000",
+      "source": "The Economist — Business",
+      "source_id": "economist-business",
+      "lang": "en",
+      "type": "rss",
+      "translated_content": "Миллениалистское мышление пронизывает бизнес и рынки",
+      "classification": {
+        "topic": "culture",
+        "confidence": 0.7,
+        "keywords": [
+          "миллениалы",
+          "мышление",
+          "культура"
+        ]
+      },
+      "risk_score": 0.5,
+      "risk_level": {
+        "level": "medium",
+        "threshold": 0.4,
+        "color": "#FFD700",
+        "label": "Средний"
+      },
+      "timestamp": "2026-06-04T01:01:51.933746"
+    },
+    {
+      "id": "mock_df034bdf",
+      "url": "https://mock-news.example.com/09752d35",
+      "title": "Four-Day Work Week Trials Report Positive Outcomes",
+      "content": "Pilot programs for the four-day work week show improved employee satisfaction and maintained productivity. More companies are considering implementing flexible work schedules.",
+      "published": "2026-06-04T01:01:50.158159",
+      "source": "Mock HR News (Demo)",
+      "lang": "en",
+      "type": "mock",
+      "is_mock": true,
+      "translated_content": "Пилотные программы перехода на четырехдневную рабочую неделю демонстрируют повышение удовлетворенности сотрудников при сохранении продуктивности. Все больше компаний рассматривают возможность внедрения гибких графиков работы.",
+      "classification": {
+        "topic": "culture",
+        "confidence": 0.75,
+        "keywords": [
+          "удовлетворенность",
+          "сотрудники",
+          "гибкие графики"
+        ]
+      },
+      "risk_score": 0.5,
+      "risk_level": {
+        "level": "medium",
+        "threshold": 0.4,
+        "color": "#FFD700",
+        "label": "Средний"
+      },
+      "timestamp": "2026-06-04T01:01:52.683320"
+    },
+    {
+      "id": "mock_0e1f4422",
+      "url": "https://mock-news.example.com/01fa8d86",
+      "title": "Diversity Initiatives Show Mixed Results in Annual Report",
+      "content": "The latest diversity and inclusion metrics reveal progress in some areas while highlighting persistent gaps. Companies are reevaluating their D&I strategies and investing in new approaches.",
+      "published": "2026-06-04T01:01:50.158159",
+      "source": "Mock HR News (Demo)",
+      "lang": "en",
+      "type": "mock",
+      "is_mock": true,
+      "translated_content": "Последние показатели разнообразия и включения показывают прогресс в некоторых областях, одновременно выявляя устойчивые пробелы. Компании пересматривают свои стратегии D&I и инвестируют в новые подходы.",
+      "classification": {
+        "topic": "diversity",
+        "confidence": 0.85,
+        "keywords": [
+          "разнообразие",
+          "включение",
+          "D&I"
+        ]
+      },
+      "risk_score": 0.5,
+      "risk_level": {
+        "level": "medium",
+        "threshold": 0.4,
+        "color": "#FFD700",
+        "label": "Средний"
+      },
+      "timestamp": "2026-06-04T01:01:53.581201"
+    },
+    {
+      "id": "mock_09eaa80e",
+      "url": "https://mock-news.example.com/706f2321",
+      "title": "Tech Giants Announce Major Layoffs Amid Economic Uncertainty",
+      "content": "Several major technology companies have announced significant workforce reductions. Meta, Amazon, and Google are among the companies implementing layoffs affecting thousands of employees. Industry analysts suggest this trend may continue into 2024.",
+      "published": "2026-06-04T01:01:50.158159",
+      "source": "Mock HR News (Demo)",
+      "lang": "en",
+      "type": "mock",
+      "is_mock": true,
+      "translated_content": "Несколько крупных технологических компаний объявили о значительных сокращениях персонала. Meta, Amazon и Google входят в число компаний, осуществляющих увольнения тысяч сотрудников. Эксперты отрасли предполагают, что эта тенденция может сохраниться до 2024 года.",
+      "classification": {
+        "topic": "layoffs",
+        "confidence": 0.8,
+        "keywords": [
+          "сокращения",
+          "персонала",
+          "уволения"
+        ]
+      },
+      "risk_score": 0.5,
+      "risk_level": {
+        "level": "medium",
+        "threshold": 0.4,
+        "color": "#FFD700",
+        "label": "Средний"
+      },
+      "timestamp": "2026-06-04T01:01:54.372078"
     }
   ],
   "insights": [
+    {
+      "what_changed": "Крупные технологические компании, такие как Meta, Amazon и Google, объявляют массовые сокращения персонала.",
+      "why_important": "Это может привести к увеличению текучести кадров среди специалистов в нашей индустрии и вызвать дефицит квалифицированных сотрудников на рынке труда.",
+      "recommendation": "Провести анализ текущего состояния рынка труда и оценить влияние возможных сокращений на наши кадровые резервы и стратегию найма.",
+      "risk_level": "medium",
+      "urgency": "week",
+      "topic": "layoffs",
+      "topic_name": "Сокращения и увольнения",
+      "source": "Mock HR News (Demo)",
+      "source_title": "Tech Giants Announce Major Layoffs Amid Economic Uncertainty",
+      "source_item": {
+        "title": "Tech Giants Announce Major Layoffs Amid Economic Uncertainty",
+        "topic": "layoffs",
+        "risk_score": 0.5
+      },
+      "priority": 75,
+      "generated_at": "2026-06-04T01:01:55.192341"
+    },
     {
       "what_changed": "Компании планируют увеличение бюджета на найм IT-специалистов на 30% в следующем году",
       "why_important": "Это указывает на рост конкуренции за IT-кадры и потенциальное повышение затрат на рекрутинг, что может повлиять на эффективность найма и бюджетирование HR-отдела",
@@ -2485,7 +2644,12 @@
         "value": 0.5
       }
     ],
-    "layoffs": [],
+    "layoffs": [
+      {
+        "timestamp": "2026-06-04T01:01:54.387492",
+        "value": 0.5
+      }
+    ],
     "salaries": [
       {
         "timestamp": "2026-06-04T01:00:10.078390",
@@ -2768,16 +2932,77 @@
       {
         "timestamp": "2026-06-04T01:01:00.175807",
         "value": 0.5
+      },
+      {
+        "timestamp": "2026-06-04T01:01:51.342723",
+        "value": 0.5
+      },
+      {
+        "timestamp": "2026-06-04T01:01:51.952973",
+        "value": 0.5
+      },
+      {
+        "timestamp": "2026-06-04T01:01:52.700199",
+        "value": 0.5
       }
     ],
     "diversity": [
       {
         "timestamp": "2026-06-04T01:00:09.162802",
         "value": 0.5
+      },
+      {
+        "timestamp": "2026-06-04T01:01:53.590876",
+        "value": 0.5
       }
     ]
   },
   "alerts": [
+    {
+      "title": "Обнаружен риск: Сокращения и увольнения",
+      "content": "Несколько крупных технологических компаний объявили о значительных сокращениях персонала. Meta, Amazon и Google входят в число компаний, осуществляющих увольнения тысяч сотрудников. Эксперты отрасли п",
+      "risk_level": "medium",
+      "topic": "layoffs",
+      "source": "Mock HR News (Demo)",
+      "created_at": "2026-06-04T01:01:55.199047",
+      "acknowledged": false
+    },
+    {
+      "title": "Обнаружен риск: Разнообразие и инклюзия",
+      "content": "Последние показатели разнообразия и включения показывают прогресс в некоторых областях, одновременно выявляя устойчивые пробелы. Компании пересматривают свои стратегии D&I и инвестируют в новые подход",
+      "risk_level": "medium",
+      "topic": "diversity",
+      "source": "Mock HR News (Demo)",
+      "created_at": "2026-06-04T01:01:53.610199",
+      "acknowledged": false
+    },
+    {
+      "title": "Обнаружен риск: Корпоративная культура",
+      "content": "Пилотные программы перехода на четырехдневную рабочую неделю демонстрируют повышение удовлетворенности сотрудников при сохранении продуктивности. Все больше компаний рассматривают возможность внедрени",
+      "risk_level": "medium",
+      "topic": "culture",
+      "source": "Mock HR News (Demo)",
+      "created_at": "2026-06-04T01:01:52.722425",
+      "acknowledged": false
+    },
+    {
+      "title": "Обнаружен риск: Корпоративная культура",
+      "content": "Миллениалистское мышление пронизывает бизнес и рынки",
+      "risk_level": "medium",
+      "topic": "culture",
+      "source": "The Economist — Business",
+      "created_at": "2026-06-04T01:01:51.980218",
+      "acknowledged": false
+    },
+    {
+      "title": "Обнаружен риск: Корпоративная культура",
+      "content": "Мессенджер «Макс» исчез из магазина приложений Apple. При этом его все еще можно установить в остальных магазинах приложений",
+      "risk_level": "medium",
+      "topic": "culture",
+      "source": "РБК — Экономика",
+      "created_at": "2026-06-04T01:01:51.371770",
+      "acknowledged": false
+    },
     {
       "title": "Обнаружен риск: Найм и рекрутинг",
       "content": "Российские компании планируют увеличить расходы на привлечение IT-талантов на 30% в следующем году. Конкуренция за квалифицированных разработчиков остаётся высокой.",
@@ -3182,51 +3407,6 @@
       "source": "РБК — Экономика",
       "created_at": "2026-06-04T01:00:11.908132",
       "acknowledged": false
-    },
-    {
-      "title": "Обнаружен риск: Корпоративная культура",
-      "content": "На 63-м году жизни умер бывший директор службы внешнеполитической разведки Великобритании MI6 Алекс Янгер, сообщает The Telegraph.",
-      "risk_level": "medium",
-      "topic": "culture",
-      "source": "РБК — Экономика",
-      "created_at": "2026-06-04T01:00:11.530480",
-      "acknowledged": false
-    },
-    {
-      "title": "Обнаружен риск: Зарплаты и компенсации",
-      "content": "В компании ожидают, что реализация программы обратного выкупа увеличит размер выплаты будущих дивидендов в пересчете на бумагу",
-      "risk_level": "medium",
-      "topic": "salaries",
-      "source": "РБК — Экономика",
-      "created_at": "2026-06-04T01:00:10.929424",
-      "acknowledged": false
-    },
-    {
-      "title": "Обнаружен риск: Корпоративная культура",
-      "content": "Страны Европы взялись за организацию переговоров России и Украины, пишет Bloomberg. Ранее в ЕС подыскивали кандиатуру спецпосланника для контактов с Москвой",
-      "risk_level": "medium",
-      "topic": "culture",
-      "source": "РБК — Экономика",
-      "created_at": "2026-06-04T01:00:09.741831",
-      "acknowledged": false
-    },
-    {
-      "title": "Обнаружен риск: Разнообразие и инклюзия",
-      "content": "Банки смещают фокус: поддержка высокотеха, финансовая грамотность и инклюзивная среда для клиентов по всей стране. Об эволюции отрасли рассказала Вера Подгузова, старший вице-президент, директор по вн",
-      "risk_level": "medium",
-      "topic": "diversity",
-      "source": "РБК — Экономика",
-      "created_at": "2026-06-04T01:00:09.183537",
-      "acknowledged": false
-    },
-    {
-      "title": "Обнаружен риск: Корпоративная культура",
-      "content": "США должны продолжать вести двухсторонний диалог с Россией, заявил госсекретарь США Марко Рубио на слушаниях в комитете по иностранным делам Палаты представителей конгресса.",
-      "risk_level": "medium",
-      "topic": "culture",
-      "source": "РБК — Экономика",
-      "created_at": "2026-06-04T01:00:08.784818",
-      "acknowledged": false
     }
   ],
   "processed_urls": [
@@ -3306,7 +3486,12 @@
     "https://www.economist.com/business/2026/06/03/byd-is-losing-its-spark",
     "https://mock-news.example.com/7ffaa21c",
     "https://mock-news.example.com/d236e181",
-    "https://mock-news.example.com/e7df8936"
+    "https://mock-news.example.com/e7df8936",
+    "https://www.rbc.ru/society/21/04/2026/69e7768d9a7947ae4b3ffe93",
+    "https://www.economist.com/business/2026/06/03/american-capitalism-has-taken-an-apocalyptic-turn",
+    "https://mock-news.example.com/09752d35",
+    "https://mock-news.example.com/01fa8d86",
+    "https://mock-news.example.com/706f2321"
   ],
   "content_fingerprints": [
     {
@@ -3693,6 +3878,31 @@
       "fingerprint": 2255873644517771355,
       "exact": "0d4a06207a4b7b4e1ac16c5491f426173a4e56a8",
       "item_id": "https://mock-news.example.com/e7df8936"
+    },
+    {
+      "fingerprint": 11369419600777495851,
+      "exact": "550f8358d43b588a03affeaa21cc040cc415f48e",
+      "item_id": "https://www.rbc.ru/society/21/04/2026/69e7768d9a7947ae4b3ffe93"
+    },
+    {
+      "fingerprint": 13443460906148017535,
+      "exact": "326d959474b851321e8ecf38455347ca83dc5c97",
+      "item_id": "https://www.economist.com/business/2026/06/03/american-capitalism-has-taken-an-apocalyptic-turn"
+    },
+    {
+      "fingerprint": 2830579600605146235,
+      "exact": "53693ad295685a45557fb80b36d0ff8e52635ae0",
+      "item_id": "https://mock-news.example.com/09752d35"
+    },
+    {
+      "fingerprint": 1402057874518965181,
+      "exact": "4e2966276f203e70bdcf40107dbb70a10c77b530",
+      "item_id": "https://mock-news.example.com/01fa8d86"
+    },
+    {
+      "fingerprint": 11268020887811874309,
+      "exact": "44ab39f4fe0e7106039ee18a50c24f870ed6f952",
+      "item_id": "https://mock-news.example.com/706f2321"
     }
   ],
   "source_events": [
@@ -4332,11 +4542,130 @@
       "item_id": "https://mock-news.example.com/e7df8936",
       "cycle": "2026-06-04T00:58:49.919455",
       "timestamp": "2026-06-04T01:01:03.744279"
+    },
+    {
+      "source_id": "hbr",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.158159"
+    },
+    {
+      "source_id": "fast-company-work",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.162917"
+    },
+    {
+      "source_id": "fortune-at-work",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.168291"
+    },
+    {
+      "source_id": "vc-ru",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.174371"
+    },
+    {
+      "source_id": "rbc-hr",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.179716"
+    },
+    {
+      "source_id": "habr",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.184793"
+    },
+    {
+      "source_id": "hacker-news",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.189686"
+    },
+    {
+      "source_id": "reddit-humanresources",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.194659"
+    },
+    {
+      "source_id": "techcrunch-hr",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.201229"
+    },
+    {
+      "source_id": "wired-work",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.206009"
+    },
+    {
+      "source_id": "economist-business",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.212086"
+    },
+    {
+      "source_id": "mit-sloan",
+      "kind": "fetched",
+      "count": 10,
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.216461"
+    },
+    {
+      "source_id": "rbc-hr",
+      "kind": "accepted",
+      "item_id": "https://www.rbc.ru/society/21/04/2026/69e7768d9a7947ae4b3ffe93",
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:50.241716"
+    },
+    {
+      "source_id": "economist-business",
+      "kind": "accepted",
+      "item_id": "https://www.economist.com/business/2026/06/03/american-capitalism-has-taken-an-apocalyptic-turn",
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:51.379440"
+    },
+    {
+      "source_id": "Mock HR News (Demo)",
+      "kind": "accepted",
+      "item_id": "https://mock-news.example.com/09752d35",
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:51.989604"
+    },
+    {
+      "source_id": "Mock HR News (Demo)",
+      "kind": "accepted",
+      "item_id": "https://mock-news.example.com/01fa8d86",
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:52.729512"
+    },
+    {
+      "source_id": "Mock HR News (Demo)",
+      "kind": "accepted",
+      "item_id": "https://mock-news.example.com/706f2321",
+      "cycle": "2026-06-04T01:01:05.793023",
+      "timestamp": "2026-06-04T01:01:53.617930"
     }
   ],
   "metrics": {
-    "total_sources_checked": 1,
-    "total_insights_generated": 15,
+    "total_sources_checked": 2,
+    "total_insights_generated": 16,
     "anomalies_detected": 0,
     "content_duplicates_skipped": 0
   }
