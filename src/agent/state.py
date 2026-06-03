@@ -17,13 +17,35 @@ class AgentState:
         self.state = self._load_state()
     
     def _load_state(self) -> dict:
-        """Load state from file or create new."""
+        """Load state from file or seed from demo snapshot.
+
+        Lookup order:
+          1. ``data/state.json`` — real persistent state (gitignored).
+          2. ``data/demo_state.json`` — tracked snapshot used as a fallback so
+             a fresh clone (or a fresh machine in the defence room) doesn't
+             show an empty dashboard. Without this, if the network blocks
+             RSS during the live demo, the screen is blank.
+          3. ``_default_state()`` — empty skeleton.
+        """
         if self.state_file.exists():
             try:
                 with open(self.state_file, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except:
+            except (OSError, ValueError, json.JSONDecodeError):
                 pass
+
+        # Look for the demo snapshot next to the real state file, not at a
+        # globally-fixed location — this lets unit tests with an isolated
+        # ``state_file`` skip the fallback by simply not placing a demo file
+        # alongside it.
+        demo_state_file = self.state_file.parent / "demo_state.json"
+        if demo_state_file.exists():
+            try:
+                with open(demo_state_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except (OSError, ValueError, json.JSONDecodeError):
+                pass
+
         return self._default_state()
     
     def _default_state(self) -> dict:

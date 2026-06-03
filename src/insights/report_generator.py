@@ -1,14 +1,19 @@
 """Daily HR summary report generation.
 
-Turns the agent's accumulated state into a self-contained Markdown document
-the analyst can hand to a manager or paste into a Telegram channel. Closes
-the «пересмотреть выводимые данные / добавление отчёта» item from the team
-chat after the previous defence.
+Turns the agent's accumulated state into a self-contained document the
+analyst can hand to a manager or paste into a Telegram channel. Closes
+the «пересмотреть выводимые данные / добавление отчёта» item from the
+team chat after the previous defence.
+
+Two formats:
+  * Markdown (default) — universal, renders in GitHub, Telegram, any IDE.
+  * PDF (optional) — for committee members who insist on paper.
 
 The renderer is deliberately pure: it takes the dashboard data dict (the
 same one ``HRAgent.get_dashboard_data`` already produces) and returns a
-string. No filesystem, no Streamlit imports — that keeps it trivially
-testable and lets the dashboard wrap it in ``st.download_button``.
+string (MD) or bytes (PDF). No filesystem, no Streamlit imports — that
+keeps it trivially testable and lets the dashboard wrap it in
+``st.download_button``.
 """
 from __future__ import annotations
 
@@ -136,6 +141,120 @@ def generate_daily_summary_markdown(
     out.append("_Отчёт сгенерирован автоматически модулем `report_generator.py`._")
 
     return "\n".join(out)
+
+
+def generate_daily_summary_pdf(
+    dashboard_data: dict,
+    hours_window: int = 24,
+    now: Optional[datetime] = None,
+) -> bytes:
+    """Render the same daily summary as PDF bytes.
+
+    Uses fpdf2 — a pure-Python library with no system dependencies (unlike
+    weasyprint, which needs GTK/Cairo and would not survive Streamlit Cloud).
+    Cyrillic is rendered through DejaVu Sans which ships with the OS in most
+    environments; if it is not found we fall back to a Latin-only built-in
+    font and the report becomes ASCII-only — acceptable for a fallback path.
+    """
+    from fpdf import FPDF  # local import — fpdf2 is optional at module level
+
+    md = generate_daily_summary_markdown(dashboard_data, hours_window=hours_window, now=now)
+
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.set_auto_page_break(auto=True, margin=12)
+    pdf.add_page()
+
+    # Try to register a Cyrillic-capable TrueType font. fpdf2 does not bundle
+    # DejaVu; we look in common system locations and fall back gracefully.
+    font_set = False
+    candidate_paths = [
+        r"C:\Windows\Fonts\DejaVuSans.ttf",
+        r"C:\Windows\Fonts\arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/Library/Fonts/Arial.ttf",
+    ]
+    for path in candidate_paths:
+        try:
+            # fpdf2 ≥ 2.5 auto-detects unicode TTFs — no `uni=True` needed.
+            pdf.add_font("Body", "", path)
+            pdf.set_font("Body", size=10)
+            font_set = True
+            break
+        except (RuntimeError, FileNotFoundError, OSError):
+            continue
+    if not font_set:
+        pdf.set_font("Helvetica", size=10)
+
+    # Render Markdown line-by-line. We don't parse full MD — committee
+    # only needs readable structure, not perfect typesetting.
+    for raw_line in md.splitlines():
+        line = raw_line.rstrip()
+        if not font_set:
+            # Strip non-ASCII to avoid fpdf encoding errors on the fallback.
+            line = line.encode("ascii", "ignore").decode("ascii")
+        # Markdown table separators like |---|---| have no content value in
+        # PDF — skip them entirely. Long lines without spaces (e.g. URLs)
+        # break fpdf's word-wrap; we hard-truncate to a safe width.
+        if line.startswith("|") and set(line.replace("|", "").replace(" ", "")) <= {"-", ":"}:
+            continue
+        line = _safe_pdf_line(line)
+        if line.startswith("# "):
+            _set_size(pdf, 16, bold=True, font_set=font_set)
+            pdf.multi_cell(pdf.epw, 8, line[2:])
+            _set_size(pdf, 10, bold=False, font_set=font_set)
+        elif line.startswith("## "):
+            pdf.ln(2)
+            _set_size(pdf, 13, bold=True, font_set=font_set)
+            pdf.multi_cell(pdf.epw, 7, line[3:])
+            _set_size(pdf, 10, bold=False, font_set=font_set)
+        elif line.startswith("### "):
+            _set_size(pdf, 11, bold=True, font_set=font_set)
+            pdf.multi_cell(pdf.epw, 6, line[4:])
+            _set_size(pdf, 10, bold=False, font_set=font_set)
+        elif line.startswith("---"):
+            pdf.ln(2)
+        elif line.startswith("- ") or line.startswith("* "):
+            pdf.multi_cell(pdf.epw, 5, "  • " + line[2:])
+        elif line == "":
+            pdf.ln(2)
+        else:
+            pdf.multi_cell(pdf.epw, 5, line)
+
+    out = pdf.output(dest="S")
+    # fpdf2 returns bytearray; Streamlit's download_button wants bytes.
+    return bytes(out)
+
+
+def _safe_pdf_line(line: str, max_word_len: int = 60) -> str:
+    """Break long unbroken tokens so fpdf2's word-wrap can handle them.
+
+    fpdf2 raises "Not enough horizontal space to render a single character"
+    when a single token (e.g. a long URL or a markdown table cell) is wider
+    than the page width. We insert a zero-cost soft break (a space) every
+    ``max_word_len`` characters within long tokens.
+    """
+    parts = []
+    for token in line.split(" "):
+        if len(token) <= max_word_len:
+            parts.append(token)
+            continue
+        chunks = [token[i:i + max_word_len] for i in range(0, len(token), max_word_len)]
+        parts.append(" ".join(chunks))
+    return " ".join(parts)
+
+
+def _set_size(pdf, size: int, bold: bool, font_set: bool) -> None:
+    """Switch font size without losing the registered Cyrillic font.
+
+    fpdf2's ``style="B"`` would need a separate Bold-weight TTF — registering
+    one isn't worth the complexity here. Bold-ish emphasis comes from the
+    larger font size used for headers, which is enough for a daily report.
+    """
+    if font_set:
+        pdf.set_font("Body", size=size)
+    else:
+        style = "B" if bold else ""
+        pdf.set_font("Helvetica", style=style, size=size)
 
 
 def _filter_recent(items: list, ts_key: str, cutoff: datetime) -> list:

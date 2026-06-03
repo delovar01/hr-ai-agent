@@ -15,7 +15,7 @@ from src.agent.core import hr_agent
 from src.agent.state import agent_state
 from src.api.gigachat import gigachat_client
 from src.api.rag import rag_context_builder
-from src.insights.report_generator import generate_daily_summary_markdown
+from src.insights.report_generator import generate_daily_summary_markdown, generate_daily_summary_pdf
 from src.insights.filters import filter_alerts, filter_insights
 from src.processing.quality_metrics import load_cached_report
 from config.settings import HR_TOPICS, USER_ROLES, RISK_LEVELS, TIME_RANGES
@@ -542,7 +542,7 @@ def render_report_export():
         "агента. Скачивается одним файлом."
     )
 
-    col1, col2 = st.columns([1, 3])
+    col1, col2, col3 = st.columns([2, 2, 2])
     with col1:
         hours_window = st.selectbox(
             "Период отчёта",
@@ -551,22 +551,34 @@ def render_report_export():
             index=0,
             help="Период берётся для фильтра критических событий",
         )
-    with col2:
-        try:
-            dashboard_data = hr_agent.get_dashboard_data()
-            md = generate_daily_summary_markdown(dashboard_data, hours_window=hours_window)
-            filename = f"hr_daily_summary_{datetime.now().strftime('%Y-%m-%d_%H%M')}.md"
+    md = ""
+    try:
+        dashboard_data = hr_agent.get_dashboard_data()
+        md = generate_daily_summary_markdown(dashboard_data, hours_window=hours_window)
+        ts = datetime.now().strftime('%Y-%m-%d_%H%M')
+        with col2:
             st.download_button(
-                label="⬇️ Скачать отчёт (Markdown)",
+                label="⬇️ Markdown",
                 data=md.encode("utf-8"),
-                file_name=filename,
+                file_name=f"hr_daily_summary_{ts}.md",
                 mime="text/markdown",
                 use_container_width=True,
                 type="primary",
             )
-        except Exception as exc:  # pragma: no cover — defensive UI guard
-            st.error(f"Не удалось сгенерировать отчёт: {exc}")
-            md = ""
+        with col3:
+            try:
+                pdf_bytes = generate_daily_summary_pdf(dashboard_data, hours_window=hours_window)
+                st.download_button(
+                    label="📄 PDF",
+                    data=pdf_bytes,
+                    file_name=f"hr_daily_summary_{ts}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                )
+            except Exception as exc:
+                st.caption(f"PDF недоступен: {exc}")
+    except Exception as exc:  # pragma: no cover — defensive UI guard
+        st.error(f"Не удалось сгенерировать отчёт: {exc}")
 
     with st.expander("Предпросмотр отчёта", expanded=False):
         st.markdown(md if md else "_Нет данных._")
