@@ -13,6 +13,8 @@ import time
 
 from src.agent.core import hr_agent
 from src.agent.state import agent_state
+from src.api.gigachat import gigachat_client
+from src.api.rag import rag_context_builder
 from config.settings import HR_TOPICS, USER_ROLES, RISK_LEVELS, TIME_RANGES
 
 # Page config
@@ -83,6 +85,10 @@ def init_session_state():
         st.session_state.last_cycle_result = None
     if "auto_refresh" not in st.session_state:
         st.session_state.auto_refresh = False
+    # Chat history for the «Спроси у HR-агента» RAG box. Kept in session
+    # so re-running the script (Streamlit's normal behavior) does not wipe it.
+    if "rag_history" not in st.session_state:
+        st.session_state.rag_history = []  # list of {"q": str, "a": str}
 
 
 def render_sidebar():
@@ -431,6 +437,68 @@ def render_agent_explanation():
         """)
 
 
+def render_rag_chat():
+    """Render the «Спроси у HR-агента» RAG chat box.
+
+    The agent is still proactive — the chat is layered on top of its state
+    so the user can drill into a question without waiting for the next cycle.
+    Context comes from the latest insights, alerts and observations; GigaChat
+    is constrained to answer only from this curated slice.
+    """
+    st.markdown("## 💬 Спроси у HR-агента")
+    st.caption(
+        "Диалог поверх собранных агентом данных. Модель отвечает строго по "
+        "текущим инсайтам, алертам и наблюдениям — если данных нет, она об "
+        "этом скажет и предложит запустить новый цикл."
+    )
+
+    # Show prior turns so the conversation flow stays visible.
+    for turn in st.session_state.rag_history[-6:]:
+        with st.chat_message("user"):
+            st.markdown(turn["q"])
+        with st.chat_message("assistant"):
+            st.markdown(turn["a"])
+            if turn.get("context_summary"):
+                with st.expander("На каких данных основан ответ", expanded=False):
+                    st.markdown(turn["context_summary"])
+
+    question = st.chat_input(
+        "Например: «Какие риски выгорания заметны за последнюю неделю?»",
+        key="rag_input",
+    )
+    if not question:
+        return
+
+    insights = agent_state.get_recent_insights(20)
+    alerts = agent_state.get_unacknowledged_alerts()
+    observations = list(reversed(agent_state.state.get("observations", [])))[:30]
+
+    context = rag_context_builder.build(question, insights, alerts, observations)
+
+    if context.is_empty():
+        answer = (
+            "У агента пока нет собранных данных, чтобы ответить на этот вопрос. "
+            "Запусти цикл анализа кнопкой «▶️ Запустить цикл анализа» выше — "
+            "после него агент сможет отвечать по свежим инсайтам."
+        )
+        context_summary = ""
+    else:
+        with st.spinner("HR-агент думает над ответом..."):
+            answer = gigachat_client.answer_question(question, context.prompt_text)
+        context_summary = (
+            f"- Инсайтов в контексте: **{len(context.insights)}**\n"
+            f"- Активных алертов: **{len(context.alerts)}**\n"
+            f"- Наблюдений (заголовков): **{len(context.observations)}**"
+        )
+
+    st.session_state.rag_history.append({
+        "q": question,
+        "a": answer,
+        "context_summary": context_summary,
+    })
+    st.rerun()
+
+
 def render_glossary():
     """Render glossary of terms used in the dashboard."""
     with st.expander("📖 Глоссарий терминов", expanded=False):
@@ -476,6 +544,12 @@ def main():
     st.markdown("---")
 
     render_trends()
+
+    st.markdown("---")
+
+    # Conversational layer over the proactive agent — closes the
+    # «прослойка между LLM и сайтом готового агента» request from team chat.
+    render_rag_chat()
 
     st.markdown("---")
 
