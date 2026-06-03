@@ -82,14 +82,25 @@ def replace_keep_format(text_frame, new_text: str) -> None:
 
 # (slide_index, shape_index, new_text) — slide_index is 0-based.
 EDITS: list[tuple[int, int, str]] = [
-    # Slide 5 — Недостатки MVP: drop obsolete demo-data bullet
+    # Slide 5 — Недостатки MVP: drop obsolete "ручной запуск цикла"
+    # since scheduled GitHub Actions cron now runs the cycle hourly.
     (
         4,
         39,
         "• ограниченный пул внешних API\n"
         "• локальное JSON-состояние\n"
-        "• ручной запуск цикла\n"
-        "• датасет разметки на стадии расширения",
+        "• датасет разметки на стадии расширения\n"
+        "• Streamlit-сервер MVP, не промышленный стек",
+    ),
+    # Slide 5 — Уникальность: append the conversational layer to the list.
+    (
+        4,
+        43,
+        "• не ждёт промпта\n"
+        "• работает с HR-категориями\n"
+        "• запоминает обработанные материалы\n"
+        "• выдаёт не текстовый ответ, а приоритетный сигнал\n"
+        "• диалог «Спроси у HR-агента» поверх собранного состояния",
     ),
     # Slide 6 — Курируемый пул: replace plan-language with concrete numbers
     (
@@ -99,69 +110,82 @@ EDITS: list[tuple[int, int, str]] = [
         "A/B-тестирование. У каждого зафиксированы quality_score, "
         "topics_covered, region и обоснование выбора rationale.",
     ),
-    # Slide 9 — Доработки за итерацию: rewrite all 5 cards to surface real artifacts
-    (8, 5, "Тесты и CI"),
+    # Slide 9 — Доработки за итерацию: replace all 5 cards with the REAL
+    # additions made during the «Доработка решения» iteration (June 4 sprint).
+    # The previous iteration (MVP) deliverables — source_manager, source_analytics,
+    # SimHash, labeled_news, 109 tests — are already reflected on slides 6 and 7.
+    (8, 5, "RAG-чат «Спроси у HR-агента»"),
     (
         8,
         6,
-        "109 автотестов проходят зелёными, CI на GitHub Actions с матрицей "
-        "Python 3.10 / 3.11, Ruff lint и pytest-coverage.",
+        "Диалоговая прослойка поверх собранного состояния агента. GigaChat "
+        "отвечает строго по текущим инсайтам/алертам/наблюдениям. Закрывает "
+        "сценарий «уточнить ситуацию» без нового цикла.",
     ),
-    (8, 9, "Авторегуляция пула"),
+    (8, 9, "Экспорт ежедневного отчёта"),
     (
         8,
         10,
-        "Модуль source_manager отслеживает duplicate_rate и активность "
-        "источников и автоматически рекомендует деактивацию шумных и "
-        "активацию ценных кандидатов.",
+        "Кнопки в дашборде: Markdown и PDF. Готовая выжимка для HR-руководителя — "
+        "критические события за 24 ч, топ-направления, инсайты, метрики. "
+        "Один клик — pdf на руководителя.",
     ),
-    (8, 13, "Аналитика источников"),
+    (8, 13, "Поиск и тематический фильтр"),
     (
         8,
         14,
-        "source_analytics считает per-source метрики: items_fetched, "
-        "duplicate_rate, avg_risk_score, topic_coverage, "
-        "unique_contribution — реальные цифры в дашборде.",
+        "По уже обработанным новостям: ключевое слово + multiselect по HR-темам. "
+        "AND-семантика, регистронезависимо. Аналитик сразу находит конкретный "
+        "сигнал среди сотен наблюдений.",
     ),
-    (8, 17, "SimHash-дедупликация"),
+    (8, 17, "Cohen's κ = 0.87 на дашборде"),
     (
         8,
         18,
-        "Двухуровневая фильтрация: URL-уровень и контентный SimHash. "
-        "Самописная имплементация без внешних зависимостей, видны кросс-"
-        "источниковые дубли.",
+        "Измеримое качество классификатора: κ=0.867, accuracy=88.6% на 35 "
+        "размеченных HR-новостях. Шкала Landis & Koch — почти идеальное "
+        "согласие. Видно прямо на дашборде, не «модель умно работает», а число.",
     ),
-    (8, 21, "Качество классификации"),
+    (8, 21, "Реально проактивный режим"),
     (
         8,
         22,
-        "Размеченный датасет labeled_news.json (35 новостей, 7 HR-тем, "
-        "RU/EN). По нему считается Cohen's Kappa между разметчиками — "
-        "верхняя граница качества модели.",
+        "GitHub Actions cron 0 * * * * — цикл агента раз в час фоном, "
+        "снапшоты в ветку state-snapshots. Закрывает слабое место "
+        "«ручной запуск». Плюс золотое состояние demo_state.json как "
+        "fallback демо.",
     ),
-    # Slide 11 — Структура проекта: refresh tree
+    # Slide 11 — Структура проекта: refresh tree to include this iteration's
+    # new modules (RAG, report generator, filters, quality metrics).
     (
         10,
         5,
         "hr-ai-agent/\n"
-        "├─ config/\n"
-        "│  ├─ settings.py\n"
-        "│  └─ sources_catalog.py   ← 26 источников\n"
+        "├─ config/sources_catalog.py    ← 26 источников\n"
         "├─ dashboard/app.py\n"
         "├─ src/\n"
         "│  ├─ agent/\n"
-        "│  ├─ processing/deduplicator.py  ← SimHash\n"
-        "│  ├─ sources/source_manager.py   ← авторегуляция\n"
-        "│  └─ sources/source_analytics.py ← per-source метрики\n"
-        "├─ tests/                  ← 109 тестов\n"
+        "│  ├─ api/\n"
+        "│  │  ├─ gigachat.py\n"
+        "│  │  └─ rag.py                   ← NEW: RAG-контекст\n"
+        "│  ├─ insights/\n"
+        "│  │  ├─ generator.py\n"
+        "│  │  ├─ report_generator.py      ← NEW: MD/PDF-отчёт\n"
+        "│  │  └─ filters.py               ← NEW: поиск/фильтр\n"
+        "│  ├─ processing/\n"
+        "│  │  ├─ deduplicator.py          ← SimHash\n"
+        "│  │  └─ quality_metrics.py       ← NEW: Cohen κ\n"
+        "│  └─ sources/source_manager.py\n"
+        "├─ tests/                          ← 138 тестов\n"
         "│  └─ fixtures/labeled_news.json\n"
-        "├─ docs/\n"
-        "│  ├─ METHODOLOGY.md\n"
-        "│  └─ defense_script_mvp.md\n"
-        "├─ scripts/demo_start.{sh,ps1}\n"
-        "├─ .github/workflows/tests.yml\n"
-        "├─ Dockerfile + docker-compose.yml\n"
-        "└─ requirements.txt + requirements-dev.txt",
+        "├─ data/\n"
+        "│  ├─ demo_state.json              ← золотое демо\n"
+        "│  └─ quality_metrics.json         ← κ=0.87 кэш\n"
+        "├─ .github/workflows/\n"
+        "│  ├─ tests.yml\n"
+        "│  └─ schedule.yml                 ← NEW: cron цикла\n"
+        "├─ docs/ + scripts/\n"
+        "└─ Dockerfile + requirements.txt",
     ),
 ]
 
