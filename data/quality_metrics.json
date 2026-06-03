@@ -1,0 +1,24 @@
+{
+  "kappa": 0.8666666666666666,
+  "accuracy": 0.8857142857142857,
+  "n_items": 35,
+  "per_topic_correct": {
+    "layoffs": 3,
+    "hiring": 5,
+    "salaries": 5,
+    "skills": 5,
+    "burnout": 5,
+    "culture": 4,
+    "diversity": 4
+  },
+  "per_topic_total": {
+    "layoffs": 5,
+    "hiring": 5,
+    "salaries": 5,
+    "skills": 5,
+    "burnout": 5,
+    "culture": 5,
+    "diversity": 5
+  },
+  "computed_at": "2026-06-03T17:21:53"
+}
