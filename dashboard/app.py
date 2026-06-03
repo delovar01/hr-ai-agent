@@ -16,6 +16,7 @@ from src.agent.state import agent_state
 from src.api.gigachat import gigachat_client
 from src.api.rag import rag_context_builder
 from src.insights.report_generator import generate_daily_summary_markdown
+from src.insights.filters import filter_alerts, filter_insights
 from config.settings import HR_TOPICS, USER_ROLES, RISK_LEVELS, TIME_RANGES
 
 # Page config
@@ -265,7 +266,7 @@ def render_metrics():
 
 
 def render_insights():
-    """Render proactive insights section."""
+    """Render proactive insights section with keyword + topic filters."""
     st.markdown("## 💡 Проактивные инсайты")
     st.caption(
         "Инсайт — это рекомендация, которую агент генерирует сам, без запроса пользователя. "
@@ -280,7 +281,34 @@ def render_insights():
         st.info("💤 Пока нет инсайтов. Нажмите «Запустить цикл анализа» выше — агент соберёт новости и сгенерирует рекомендации.")
         return
 
-    for insight in insights[:5]:
+    # Keyword + topic filters — closes the «поиск новостей по собственному
+    # запросу» item from the team chat. Acts on already-collected state, not
+    # external search.
+    filter_col1, filter_col2 = st.columns([2, 3])
+    with filter_col1:
+        query = st.text_input(
+            "🔎 Поиск по тексту инсайта",
+            value="",
+            placeholder="например, «выгорание» или «массовое сокращение»",
+            key="insights_query",
+        )
+    with filter_col2:
+        topic_options = sorted({i.get("topic") for i in insights if i.get("topic")})
+        selected_topics = st.multiselect(
+            "Темы (пусто = все)",
+            options=topic_options,
+            format_func=lambda t: HR_TOPICS.get(t, t),
+            key="insights_topics",
+        )
+
+    filtered = filter_insights(insights, query=query, topics=selected_topics)
+    st.caption(f"Показано **{len(filtered)}** из {len(insights)} инсайтов")
+
+    if not filtered:
+        st.warning("По заданным фильтрам ничего не найдено.")
+        return
+
+    for insight in filtered[:5]:
         risk_level = insight.get("risk_level", "medium")
         risk_color = RISK_LEVELS.get(risk_level, {}).get("color", "#666")
         topic_name = insight.get("topic_name", "HR")
@@ -369,7 +397,21 @@ def render_alerts():
         st.success("✅ Нет уведомлений — ситуация стабильная")
         return
 
-    for alert in alerts[:10]:
+    # Quick keyword search over alert titles/content/source.
+    alerts_query = st.text_input(
+        "🔎 Поиск по уведомлениям",
+        value="",
+        placeholder="ключевое слово",
+        key="alerts_query",
+    )
+    filtered_alerts = filter_alerts(alerts, query=alerts_query)
+    if alerts_query:
+        st.caption(f"Найдено **{len(filtered_alerts)}** из {len(alerts)} уведомлений")
+        if not filtered_alerts:
+            st.info("По запросу уведомлений не найдено.")
+            return
+
+    for alert in filtered_alerts[:10]:
         risk_level = alert.get("risk_level", "medium")
         risk_info = RISK_LEVELS.get(risk_level, RISK_LEVELS["medium"])
 
