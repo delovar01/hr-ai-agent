@@ -201,6 +201,46 @@ class GigaChatClient:
 
         return parsed
 
+    def answer_question(self, question: str, context_text: str) -> str:
+        """Answer a natural-language question using state-derived RAG context.
+
+        The committee asked for a chat interface "поверх готового агента". We
+        keep the agent proactive (it still runs cycles and generates insights
+        on its own) and offer the chat as an additional read-only window into
+        accumulated state. ``context_text`` is produced by ``RAGContextBuilder``
+        and contains the curated insight / alert / observation slice — this
+        method only formats the prompt and calls GigaChat.
+
+        The system prompt is deliberately strict about not inventing facts
+        outside the supplied context — that is the whole point of grounding.
+        """
+        system = """Ты — HR-аналитик, отвечающий на вопросы пользователя строго по данным
+агента ниже. Это не свободный поиск: используй ТОЛЬКО предоставленный контекст.
+
+ПРАВИЛА:
+1. Если в контексте нет данных для ответа — честно скажи об этом одной фразой
+   и предложи запустить новый цикл анализа. Не выдумывай.
+2. Ответ — деловой, конкретный, на русском. 3-6 предложений максимум.
+3. Где уместно — ссылайся на номера инсайтов/алертов из контекста ([1], [2]).
+4. Если вопрос требует свежих данных, которых нет в контексте, скажи это явно.
+5. Не пиши «как HR-аналитик я считаю…» — пиши сразу по сути."""
+
+        if not context_text.strip():
+            context_text = "(Контекст пуст. У агента ещё нет собранных данных.)"
+
+        user = f"""КОНТЕКСТ ОТ HR-АГЕНТА:
+{context_text}
+
+ВОПРОС ПОЛЬЗОВАТЕЛЯ:
+{question}
+
+Ответь."""
+
+        result = self._chat(system, user)
+        return result.strip() if result else (
+            "Не удалось получить ответ от модели. Проверь подключение к GigaChat."
+        )
+
     def analyze_trend(self, historical: list, current: dict) -> dict:
         """Analyze trend and detect anomalies."""
         system = """Ты — аналитик HR-метрик и трендов рынка труда.
