@@ -56,7 +56,20 @@ class GigaChatClient:
             return self._mock_response(system_prompt, user_message)
 
     def _mock_response(self, system_prompt: str, user_message: str) -> str:
-        """Fallback mock response when GigaChat unavailable."""
+        """Fallback mock response when GigaChat unavailable.
+
+        IMPORTANT: question-answering check goes FIRST. The RAG system prompt
+        mentions «инсайтов/алертов» as a reference to context items, which
+        used to fall through into the insight-JSON branch and produced
+        confusing ``what_changed`` output in the chat box.
+        """
+        # RAG chat: detected by the explicit marker in ``answer_question``.
+        if "ВОПРОС ПОЛЬЗОВАТЕЛЯ" in user_message:
+            return (
+                "Модель сейчас временно недоступна, поэтому подробный ответ "
+                "сформировать не удалось. Попробуй ещё раз через минуту или "
+                "запусти цикл анализа для обновления данных."
+            )
         if "переведи" in system_prompt.lower():
             return user_message
         if "классифицируй" in system_prompt.lower():
@@ -65,7 +78,7 @@ class GigaChatClient:
                 "confidence": 0.7,
                 "keywords": ["HR", "новости"]
             }, ensure_ascii=False)
-        if "инсайт" in system_prompt.lower():
+        if "сформулируй" in system_prompt.lower() or "инсайт" in system_prompt.lower():
             return json.dumps({
                 "what_changed": "Обнаружены новые данные в HR-сфере, требующие внимания",
                 "why_important": "Изменения на рынке труда могут повлиять на стратегию компании",
@@ -237,9 +250,32 @@ class GigaChatClient:
 Ответь."""
 
         result = self._chat(system, user)
-        return result.strip() if result else (
-            "Не удалось получить ответ от модели. Проверь подключение к GigaChat."
-        )
+        if not result:
+            return "Не удалось получить ответ от модели. Проверь подключение к GigaChat."
+
+        result = result.strip()
+        # Defensive unwrap: if the model (or the fallback) returned a JSON
+        # blob shaped like an insight object, convert it to a human-readable
+        # paragraph. We saw the chat box render raw ``{"what_changed": ...}``
+        # when the prompt accidentally triggered the wrong mock branch.
+        if result.startswith("{"):
+            try:
+                data = json.loads(result)
+            except json.JSONDecodeError:
+                data = None
+            if isinstance(data, dict):
+                parts: list = []
+                if data.get("what_changed"):
+                    parts.append(str(data["what_changed"]).rstrip("."))
+                if data.get("why_important"):
+                    parts.append(str(data["why_important"]).rstrip("."))
+                if data.get("recommendation"):
+                    parts.append("Рекомендация: " + str(data["recommendation"]))
+                if data.get("analysis"):
+                    parts.append(str(data["analysis"]).rstrip("."))
+                if parts:
+                    return ". ".join(parts) + "."
+        return result
 
     def analyze_trend(self, historical: list, current: dict) -> dict:
         """Analyze trend and detect anomalies."""
