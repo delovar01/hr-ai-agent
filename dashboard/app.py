@@ -15,6 +15,7 @@ from src.agent.core import hr_agent
 from src.agent.state import agent_state
 from src.api.gigachat import gigachat_client
 from src.api.rag import rag_context_builder
+from src.insights.report_generator import generate_daily_summary_markdown
 from config.settings import HR_TOPICS, USER_ROLES, RISK_LEVELS, TIME_RANGES
 
 # Page config
@@ -437,6 +438,50 @@ def render_agent_explanation():
         """)
 
 
+def render_report_export():
+    """Render the «Экспорт ежедневного отчёта» panel.
+
+    Pulls the current dashboard data, renders Markdown via
+    ``report_generator`` and offers it through ``st.download_button``.
+    Closes the «добавить отчёт» item from the team chat.
+    """
+    st.markdown("## 📤 Ежедневный отчёт")
+    st.caption(
+        "Готовая выжимка для HR-руководителя: критические события за 24 ч, "
+        "топ-направления по динамике риска, свежие рекомендации и метрики "
+        "агента. Скачивается одним файлом."
+    )
+
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        hours_window = st.selectbox(
+            "Период отчёта",
+            options=[24, 48, 72, 168],
+            format_func=lambda h: f"{h} ч" if h < 168 else "7 дней",
+            index=0,
+            help="Период берётся для фильтра критических событий",
+        )
+    with col2:
+        try:
+            dashboard_data = hr_agent.get_dashboard_data()
+            md = generate_daily_summary_markdown(dashboard_data, hours_window=hours_window)
+            filename = f"hr_daily_summary_{datetime.now().strftime('%Y-%m-%d_%H%M')}.md"
+            st.download_button(
+                label="⬇️ Скачать отчёт (Markdown)",
+                data=md.encode("utf-8"),
+                file_name=filename,
+                mime="text/markdown",
+                use_container_width=True,
+                type="primary",
+            )
+        except Exception as exc:  # pragma: no cover — defensive UI guard
+            st.error(f"Не удалось сгенерировать отчёт: {exc}")
+            md = ""
+
+    with st.expander("Предпросмотр отчёта", expanded=False):
+        st.markdown(md if md else "_Нет данных._")
+
+
 def render_rag_chat():
     """Render the «Спроси у HR-агента» RAG chat box.
 
@@ -544,6 +589,11 @@ def main():
     st.markdown("---")
 
     render_trends()
+
+    st.markdown("---")
+
+    # Markdown daily-summary export — closes the «отчёт» item from team chat.
+    render_report_export()
 
     st.markdown("---")
 
