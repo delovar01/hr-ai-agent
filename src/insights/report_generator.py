@@ -186,28 +186,36 @@ def generate_daily_summary_pdf(
         pdf.set_font("Helvetica", size=10)
 
     # Render Markdown line-by-line. We don't parse full MD — committee
-    # only needs readable structure, not perfect typesetting.
+    # only needs readable structure, not perfect typesetting. We DO strip
+    # inline ``**bold**`` / ``*italic*`` markers since fpdf renders them
+    # literally (committee should see "Роль:", not "**Роль:**"), and we
+    # set X to the left margin before each multi_cell so a previous cell's
+    # cursor position cannot push the next line off the right edge.
     for raw_line in md.splitlines():
         line = raw_line.rstrip()
         if not font_set:
             # Strip non-ASCII to avoid fpdf encoding errors on the fallback.
             line = line.encode("ascii", "ignore").decode("ascii")
         # Markdown table separators like |---|---| have no content value in
-        # PDF — skip them entirely. Long lines without spaces (e.g. URLs)
-        # break fpdf's word-wrap; we hard-truncate to a safe width.
+        # PDF — skip them entirely.
         if line.startswith("|") and set(line.replace("|", "").replace(" ", "")) <= {"-", ":"}:
             continue
+        line = _strip_md_inline(line)
         line = _safe_pdf_line(line)
+        # Force cursor to the left margin so the next multi_cell starts at x=l_margin.
+        pdf.set_x(pdf.l_margin)
         if line.startswith("# "):
             _set_size(pdf, 16, bold=True, font_set=font_set)
             pdf.multi_cell(pdf.epw, 8, line[2:])
             _set_size(pdf, 10, bold=False, font_set=font_set)
         elif line.startswith("## "):
             pdf.ln(2)
+            pdf.set_x(pdf.l_margin)
             _set_size(pdf, 13, bold=True, font_set=font_set)
             pdf.multi_cell(pdf.epw, 7, line[3:])
             _set_size(pdf, 10, bold=False, font_set=font_set)
         elif line.startswith("### "):
+            pdf.set_x(pdf.l_margin)
             _set_size(pdf, 11, bold=True, font_set=font_set)
             pdf.multi_cell(pdf.epw, 6, line[4:])
             _set_size(pdf, 10, bold=False, font_set=font_set)
@@ -223,6 +231,38 @@ def generate_daily_summary_pdf(
     out = pdf.output(dest="S")
     # fpdf2 returns bytearray; Streamlit's download_button wants bytes.
     return bytes(out)
+
+
+def _strip_md_inline(line: str) -> str:
+    """Remove inline Markdown emphasis, link syntax and non-renderable glyphs.
+
+    fpdf2 has no Markdown parser — if we hand it ``**Роль:**`` it prints
+    the asterisks literally. Since headers already convey hierarchy via
+    font size, we just drop ``**``, ``*``, ``_`` markers and unwrap
+    ``[text](url)`` links into ``text (url)``. We also strip emoji/pictogram
+    glyphs that Arial does not contain (otherwise fpdf logs warnings and
+    renders empty squares).
+    """
+    import re
+    # ``[anchor](url)`` → ``anchor (url)``.
+    line = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"\1 (\2)", line)
+    # Bold ``**text**`` → ``text``. Handle the longer marker first so we
+    # don't eat just one of the two asterisks.
+    line = re.sub(r"\*\*([^*]+)\*\*", r"\1", line)
+    # Italic ``*text*`` → ``text``.
+    line = re.sub(r"\*([^*]+)\*", r"\1", line)
+    # Underscore italic ``_text_`` → ``text``. Use lookarounds so we don't
+    # eat underscores inside identifiers like ``what_changed``.
+    line = re.sub(r"(?<![\w])_([^_\n]+)_(?![\w])", r"\1", line)
+    # Inline code ``code`` → ``code`` (drop backticks).
+    line = re.sub(r"`([^`]+)`", r"\1", line)
+    # Strip emoji + miscellaneous-symbol code points outside Arial's coverage.
+    line = re.sub(
+        r"[\U0001F300-\U0001FAFF\U00002600-\U000027BF←-⇿]",
+        "",
+        line,
+    )
+    return line.strip()
 
 
 def _safe_pdf_line(line: str, max_word_len: int = 60) -> str:
