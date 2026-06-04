@@ -1,7 +1,9 @@
 """
 GigaChat API wrapper for translation, classification and insight generation.
 """
+import hashlib
 import json
+import time
 from typing import Optional
 
 try:
@@ -37,23 +39,41 @@ class GigaChatClient:
             )
         return self._client
 
+    # Up to 3 attempts on transient errors with exponential backoff.
+    # Rate-limit responses from GigaChat (HTTP 429) and network blips are
+    # the most common cause of "модель временно недоступна" during the
+    # live demo, and they usually clear within seconds.
+    _RETRY_DELAYS = (0.5, 1.5, 3.0)
+
     def _chat(self, system_prompt: str, user_message: str) -> str:
-        """Send message to GigaChat and get response."""
+        """Send message to GigaChat, retry on transient failure, then fallback."""
         if not self.client:
             return self._mock_response(system_prompt, user_message)
-        try:
-            response = self.client.chat(Chat(
-                messages=[
-                    Messages(role=MessagesRole.SYSTEM, content=system_prompt),
-                    Messages(role=MessagesRole.USER, content=user_message)
-                ],
-                temperature=0.4,
-                max_tokens=1500
-            ))
-            return response.choices[0].message.content
-        except Exception as e:
-            print(f"GigaChat error: {e}")
-            return self._mock_response(system_prompt, user_message)
+
+        last_error: Optional[Exception] = None
+        for attempt, delay in enumerate(self._RETRY_DELAYS, start=1):
+            try:
+                response = self.client.chat(Chat(
+                    messages=[
+                        Messages(role=MessagesRole.SYSTEM, content=system_prompt),
+                        Messages(role=MessagesRole.USER, content=user_message)
+                    ],
+                    temperature=0.4,
+                    max_tokens=1500
+                ))
+                content = response.choices[0].message.content
+                if content:  # empty/None responses count as a failure
+                    return content
+                last_error = ValueError("GigaChat returned empty response")
+            except Exception as exc:
+                last_error = exc
+                print(f"GigaChat attempt {attempt}/{len(self._RETRY_DELAYS)} failed: {exc}")
+            # Don't sleep after the final attempt.
+            if attempt < len(self._RETRY_DELAYS):
+                time.sleep(delay)
+
+        print(f"GigaChat fallback after {len(self._RETRY_DELAYS)} attempts: {last_error}")
+        return self._mock_response(system_prompt, user_message)
 
     def _mock_response(self, system_prompt: str, user_message: str) -> str:
         """Fallback mock response when GigaChat unavailable.
@@ -214,6 +234,45 @@ class GigaChatClient:
 
         return parsed
 
+    # In-process cache of {question+context hash → answer}. Survives Streamlit
+    # script reloads via lazy load from data/rag_cache.json — pre-warmed by
+    # scripts/warm_rag_cache.py before the live demo.
+    _ANSWER_CACHE: dict = {}
+    _ANSWER_CACHE_MAX = 128
+    _ANSWER_CACHE_LOADED = False
+
+    def _ensure_cache_loaded(self) -> None:
+        """One-time lazy load of the pre-warmed cache file, if present."""
+        if self._ANSWER_CACHE_LOADED:
+            return
+        type(self)._ANSWER_CACHE_LOADED = True  # set even on failure — no retry
+        try:
+            from pathlib import Path
+            from config.settings import DATA_DIR
+            path = Path(DATA_DIR) / "rag_cache.json"
+            if path.exists():
+                with open(path, "r", encoding="utf-8") as f:
+                    self._ANSWER_CACHE.update(json.load(f))
+        except Exception as exc:
+            print(f"RAG cache preload skipped: {exc}")
+
+    def _cache_key(self, question: str, context_text: str) -> str:
+        h = hashlib.sha256()
+        h.update(question.strip().lower().encode("utf-8"))
+        h.update(b"\x1f")
+        h.update(context_text.encode("utf-8"))
+        return h.hexdigest()
+
+    def _question_only_key(self, question: str) -> str:
+        """Fallback cache key keyed on the question alone.
+
+        Used when the (question, context) hit misses because state has grown
+        since the cache was warmed. The pre-warm script writes BOTH keys, so
+        a typical committee question is answered from the question-only key
+        even if state drifted by a couple of new insights.
+        """
+        return "Q::" + hashlib.sha256(question.strip().lower().encode("utf-8")).hexdigest()
+
     def answer_question(self, question: str, context_text: str) -> str:
         """Answer a natural-language question using state-derived RAG context.
 
@@ -226,7 +285,23 @@ class GigaChatClient:
 
         The system prompt is deliberately strict about not inventing facts
         outside the supplied context — that is the whole point of grounding.
+
+        Robustness:
+          * Identical (question, context) pairs are answered from cache.
+          * If GigaChat still fails after retries, instead of showing the
+            generic "временно недоступна" message we now synthesise a useful
+            answer directly from the context items.
         """
+        self._ensure_cache_loaded()
+        key = self._cache_key(question, context_text)
+        if key in self._ANSWER_CACHE:
+            return self._ANSWER_CACHE[key]
+        # Question-only fallback: if state drifted since the cache was warmed
+        # the strict key misses, but the prewarmer also writes a Q-only key
+        # so common questions stay answerable.
+        q_key = self._question_only_key(question)
+        if q_key in self._ANSWER_CACHE:
+            return self._ANSWER_CACHE[q_key]
         system = """Ты — HR-аналитик, отвечающий на вопросы пользователя строго по данным
 агента ниже. Это не свободный поиск: используй ТОЛЬКО предоставленный контекст.
 
@@ -251,9 +326,18 @@ class GigaChatClient:
 
         result = self._chat(system, user)
         if not result:
-            return "Не удалось получить ответ от модели. Проверь подключение к GigaChat."
+            answer = self._synthesise_answer_from_context(question, context_text)
+            self._remember(key, answer, question=question)
+            return answer
 
         result = result.strip()
+        # If _chat fell back to the mock "временно недоступна" string, replace
+        # it with a context-grounded summary so the user always gets something
+        # actionable rather than a dead-end error.
+        if "временно недоступна" in result.lower():
+            answer = self._synthesise_answer_from_context(question, context_text)
+            self._remember(key, answer, question=question)
+            return answer
         # Defensive unwrap: if the model (or the fallback) returned a JSON
         # blob shaped like an insight object, convert it to a human-readable
         # paragraph. We saw the chat box render raw ``{"what_changed": ...}``
@@ -274,8 +358,62 @@ class GigaChatClient:
                 if data.get("analysis"):
                     parts.append(str(data["analysis"]).rstrip("."))
                 if parts:
-                    return ". ".join(parts) + "."
+                    result = ". ".join(parts) + "."
+
+        self._remember(key, result, question=question)
         return result
+
+    def _remember(self, key: str, answer: str, question: Optional[str] = None) -> None:
+        """Insert into the cache with a soft size cap (FIFO eviction).
+
+        When ``question`` is provided we also store under the question-only
+        key so the answer stays reachable if state drifts before the next
+        identical question.
+        """
+        cache = self._ANSWER_CACHE
+        if len(cache) >= self._ANSWER_CACHE_MAX:
+            # Drop the oldest entry. dict preserves insertion order in 3.7+.
+            cache.pop(next(iter(cache)))
+        cache[key] = answer
+        if question is not None:
+            cache[self._question_only_key(question)] = answer
+
+    def _synthesise_answer_from_context(self, question: str, context_text: str) -> str:
+        """Build a usable answer from the RAG context when the LLM is down.
+
+        We pick the first few content lines from the prompt (each item is a
+        single line in RAGContextBuilder's format) and concatenate them into a
+        short summary. This is strictly worse than a real LLM answer but it is
+        infinitely better than an "временно недоступна" stub — the committee
+        sees actual data the agent collected.
+        """
+        if not context_text.strip():
+            return (
+                "У агента ещё нет собранных данных по этому вопросу. "
+                "Запусти цикл анализа кнопкой выше — модель сможет ответить "
+                "сразу после первого цикла."
+            )
+
+        bullets: list = []
+        for raw_line in context_text.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("###"):
+                continue
+            # Lines from RAGContextBuilder look like "1. [Тема] текст" or
+            # "1. [risk] заголовок — текст". Keep the substance, drop the
+            # leading numbering for a cleaner bullet.
+            if line[:2].rstrip(".").isdigit() or line[:3].rstrip(".").isdigit():
+                line = line.split(". ", 1)[-1]
+            bullets.append(line)
+            if len(bullets) >= 4:
+                break
+
+        body = "\n".join(f"• {b}" for b in bullets)
+        return (
+            f"Модель GigaChat сейчас недоступна, поэтому отвечаю по сырому "
+            f"контексту из памяти агента:\n\n{body}\n\n"
+            f"Попробуй задать вопрос ещё раз через минуту — обычно отпускает."
+        )
 
     def analyze_trend(self, historical: list, current: dict) -> dict:
         """Analyze trend and detect anomalies."""
